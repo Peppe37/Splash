@@ -17,4 +17,4 @@ The app is called **Splash**. (It was called Cromio while it was being planned; 
 
 ## Known risk
 
-"Splash" is a common word and other software uses it (for example Splash, the JavaScript rendering service, and SplashKit). Before a Mac App Store release, check the store and trademark databases for the name.
+"Splash" is a common word and other software uses it (for example Splash, the JavaScript rendering service, and SplashKit). Before a wider release, check the app stores and trademark databases for the name.

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Splash: animated wallpapers for macOS</title>
-<meta name="description" content="Splash puts animated and procedural wallpapers on your Mac. Pick a preset, tune it, or describe it to the AI agent you already use. Free, open source, and light enough to forget it is running.">
+<title>Splash – animated wallpapers for macOS</title>
+<meta name="description" content="Splash puts animated and procedural wallpapers on your Mac. Pick a preset, tune it, or describe it to the AI agent you already use. Free and open source, and light enough to forget it is running.">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:title" content="Splash">
-<meta property="og:description" content="Animated wallpapers for macOS. Free, open source, and very light.">
+<meta property="og:description" content="Animated wallpapers for macOS. Free and open source.">
 <meta property="og:image" content="https://peppe37.github.io/Splash/assets/social-preview.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://peppe37.github.io/Splash/">
@@ -17,346 +17,587 @@
 <meta name="twitter:image" content="https://peppe37.github.io/Splash/assets/social-preview.png">
 <link rel="canonical" href="https://peppe37.github.io/Splash/">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Splash","applicationCategory":"DesignApplication","operatingSystem":"macOS 14 or later","description":"Animated and procedural wallpapers for macOS, with presets, live controls and optional AI through the agent CLIs you already use. Free and open source.","url":"https://peppe37.github.io/Splash/","downloadUrl":"https://github.com/Peppe37/Splash/releases/latest","softwareVersion":"pre-alpha","license":"https://www.gnu.org/licenses/gpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Giuseppe","url":"https://github.com/Peppe37"}}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Splash","applicationCategory":"DesignApplication","operatingSystem":"macOS 14 or later","description":"Animated and procedural wallpapers for macOS, with presets, live controls and optional AI through the agent CLIs you already use. Free and open source.","url":"https://peppe37.github.io/Splash/","downloadUrl":"https://github.com/Peppe37/Splash/releases/latest","softwareVersion":"alpha","license":"https://www.gnu.org/licenses/gpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Giuseppe","url":"https://github.com/Peppe37"}}
 </script>
 <style>
-  :root {
-    --bg:#f6f5f1; --surface:#ffffff; --raised:#f0efea; --line:#e0dfdb; --line-strong:#bdbcb6;
-    --fg:#1a1a1a; --strong:#0a0a0a; --muted:#6b6a66;
-    --green:#1a7a0a; --blue:#2563eb; --purple:#7c3aed;
-    --radius:8px;
-  }
+  :root { --bg:#fff; --fg:#1d1d1f; --muted:#6e6e73; --card:#f5f5f7; --accent:#0071e3; --line:#d2d2d7; }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg:#0a0a0a; --surface:#141414; --raised:#1b1b1b; --line:#2a2a2a; --line-strong:#4a4a4a;
-      --fg:#e5e5e5; --strong:#ffffff; --muted:#8c8c86;
-      --green:#22c55e; --blue:#3b82f6; --purple:#a78bfa;
-    }
+    :root { --bg:#000; --fg:#f5f5f7; --muted:#a1a1a6; --card:#1c1c1e; --accent:#2997ff; --line:#38383a; }
   }
-  * { box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
-  body { margin:0; background:var(--bg); color:var(--fg);
-    font:16px/1.6 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    -webkit-font-smoothing:antialiased; }
-  a { color:inherit; }
-  .wrap { max-width:1120px; margin:0 auto; padding:0 24px; }
-  code, pre, .mono { font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+  main, footer, .topbar { max-width: 880px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+  a { color: var(--accent); }
 
-  /* ---------- nav ---------- */
-  nav { position:sticky; top:0; z-index:10; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-    background:color-mix(in srgb, var(--bg) 80%, transparent); border-bottom:1px solid var(--line); }
-  nav .wrap { display:flex; align-items:center; gap:28px; height:56px; }
-  .brand { display:flex; align-items:center; gap:10px; font-weight:500; letter-spacing:-.01em; text-decoration:none; color:var(--strong); }
-  .brand img { width:24px; height:24px; }
-  nav .links { display:flex; gap:22px; margin-left:auto; font-size:.875rem; color:var(--muted); }
-  nav .links a { text-decoration:none; transition:color .15s; }
-  nav .links a:hover { color:var(--strong); }
-  @media (max-width:640px) { nav .links a:not(.gh) { display:none; } }
+  .topbar { display:flex; justify-content:flex-end; padding-top: 16px; }
+  .lang { display:inline-flex; background:var(--card); border:1px solid var(--line); border-radius:980px; padding:2px; }
+  .lang button { border:0; background:transparent; color:var(--muted); font:600 .8rem/1 inherit; font-family:inherit; padding:6px 12px; border-radius:980px; cursor:pointer; }
+  .lang button[aria-pressed="true"] { background:var(--accent); color:#fff; }
 
-  /* ---------- buttons ---------- */
-  .btn { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 18px; border-radius:6px; font-size:.9rem; font-weight:500;
-    text-decoration:none; border:1px solid var(--line); background:var(--surface); color:var(--fg); transition:opacity .15s, border-color .15s; cursor:pointer; }
-  .btn:hover { border-color:var(--line-strong); }
-  .btn.primary { background:var(--strong); color:var(--bg); border-color:var(--strong); }
-  .btn.primary:hover { opacity:.85; }
-  .badge { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-size:.75rem; font-weight:500;
-    color:var(--c, var(--muted)); background:color-mix(in srgb, var(--c, var(--muted)) 10%, transparent); border:1px solid color-mix(in srgb, var(--c, var(--muted)) 28%, transparent); }
+  .hero { text-align:center; padding: 16px 0 24px; }
+  .logo { width: 96px; height: 96px; display:block; margin: 0 auto 16px; }
+  h1 { font-size: clamp(2.2rem, 7vw, 3.5rem); margin: 0 0 12px; letter-spacing: -.02em; }
+  .tag { color: var(--muted); font-size: 1.2rem; max-width: 560px; margin: 0 auto 28px; }
+  .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding: 12px 24px; border-radius: 980px; font-weight:600; margin: 4px; border:0; font-family:inherit; font-size:inherit; cursor:pointer; }
+  .btn.sec { background:transparent; color:var(--accent); }
+  .meta { color:var(--muted); font-size:.9rem; margin-top:14px; min-height: 1.4em; }
+  .badge { display:inline-block; font-size:.75rem; font-weight:600; padding:2px 8px; border-radius:6px; background:var(--card); border:1px solid var(--line); vertical-align:middle; }
 
-  /* ---------- hero ---------- */
-  .hero { padding:88px 0 40px; text-align:center; }
-  .hero .badge { margin-bottom:24px; }
-  h1 { font-weight:400; font-size:clamp(2.6rem, 6.4vw, 4.6rem); line-height:1.04; letter-spacing:-.035em; margin:0 auto 22px; max-width:800px; color:var(--strong); }
-  .lead { font-size:clamp(1.05rem, 2vw, 1.25rem); color:var(--muted); max-width:620px; margin:0 auto 32px; line-height:1.55; }
-  .cta { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-  .meta { color:var(--muted); font-size:.8125rem; margin-top:16px; min-height:1.4em; }
-
-  /* ---------- live demo ---------- */
-  .stage { margin:44px auto 0; max-width:1000px; }
-  .screen { position:relative; aspect-ratio:16/10; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#000; }
-  .screen iframe, .screen img { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; object-fit:cover; }
-  .menubar { position:absolute; inset:0 0 auto 0; height:26px; z-index:2; display:flex; align-items:center; gap:16px; padding:0 14px; color:#fff;
-    font-size:12px; font-weight:500; background:rgba(0,0,0,.22); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); pointer-events:none; }
-  .menubar b { font-weight:700; } .menubar .r { margin-left:auto; }
-  .controls { display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; justify-content:space-between; padding:14px 2px 0; }
+  /* ---------- Live preview ---------- */
+  .preview { margin: 8px 0 0; }
+  .screen-box { width: 100%; max-width: 760px; margin: 0 auto; }
+  .screen { position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; background:#000; border:1px solid var(--line); }
+  .screen iframe { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+  .menubar { position:absolute; inset: 0 0 auto 0; height:30px; z-index:2; background: rgba(0,0,0,.18); backdrop-filter: blur(8px);
+    display:flex; align-items:center; justify-content:space-between; padding: 0 14px; color:#fff; font-size: 12.5px; font-weight:500; opacity:.9; pointer-events:none; }
+  .menubar span + span { margin-left: 14px; }
+  .menubar .l b { font-weight:700; }
+  @media (max-width: 520px) { .menubar .l span:nth-child(n+3) { display:none; } }
+  .tools { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; justify-content:space-between; max-width:760px; margin:14px auto 0; }
   .chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .chip { height:30px; padding:0 12px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--muted); font:inherit; font-size:.8125rem; font-weight:500; cursor:pointer; transition:color .15s, border-color .15s; }
-  .chip:hover { color:var(--strong); border-color:var(--line-strong); }
-  .chip[aria-pressed="true"] { color:var(--bg); background:var(--strong); border-color:var(--strong); }
-  .pickers { display:flex; align-items:center; gap:10px; font-size:.8125rem; color:var(--muted); }
-  .pickers input { appearance:none; width:26px; height:26px; padding:0; border:1px solid var(--line); border-radius:6px; background:none; cursor:pointer; }
-  .pickers input::-webkit-color-swatch-wrapper { padding:3px; } .pickers input::-webkit-color-swatch { border:0; border-radius:3px; }
-  .note { color:var(--muted); font-size:.8125rem; text-align:center; margin:14px 0 0; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--muted); font:600 .8rem/1 inherit; font-family:inherit; padding:8px 13px; border-radius:980px; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .pickers { display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; font-size:.85rem; color:var(--muted); }
+  .pickers label { display:inline-flex; align-items:center; gap:7px; }
+  .pickers input { appearance:none; -webkit-appearance:none; width:28px; height:28px; padding:0; border:1px solid var(--line); border-radius:50%; background:none; cursor:pointer; }
+  .pickers input::-webkit-color-swatch-wrapper { padding:2px; } .pickers input::-webkit-color-swatch { border:0; border-radius:50%; }
+  .hint { text-align:center; color:var(--muted); font-size:.85rem; margin: 14px 0 0; }
 
-  /* ---------- sections ---------- */
-  section { padding:88px 0 0; }
-  .eyebrow { font-size:.75rem; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; }
-  h2 { font-weight:400; font-size:clamp(1.8rem, 3.6vw, 2.6rem); line-height:1.12; letter-spacing:-.03em; margin:0 0 16px; color:var(--strong); max-width:680px; }
-  .sub { color:var(--muted); max-width:640px; margin:0 0 40px; font-size:1.05rem; }
-  .grid { display:grid; gap:16px; }
-  .g3 { grid-template-columns:repeat(3, 1fr); } .g2 { grid-template-columns:repeat(2, 1fr); }
-  @media (max-width:860px) { .g3, .g2 { grid-template-columns:1fr; } }
-  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px; transition:border-color .15s; }
-  .card:hover { border-color:var(--line-strong); }
-  .card h3 { margin:12px 0 8px; font-size:1.1rem; font-weight:500; letter-spacing:-.01em; color:var(--strong); }
+  /* ---------- Reviews ---------- */
+  .rev-top { display:grid; grid-template-columns: minmax(180px,1fr) minmax(220px,1.6fr) minmax(220px,1.4fr); gap:16px; margin:20px 0 8px; align-items:stretch; }
+  @media (max-width: 820px) { .rev-top { grid-template-columns: 1fr; } }
+  .rev-score { text-align:center; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+  .rev-big { font-size:3.4rem; font-weight:700; letter-spacing:-.03em; line-height:1; }
+  .rev-count { color:var(--muted); font-size:.9rem; }
+  .stars { font-size:1.15rem; letter-spacing:.08em; color:var(--line); white-space:nowrap; }
+  .stars .on { color:#ff9f0a; }
+  .rev-bars { display:flex; flex-direction:column; justify-content:center; gap:7px; }
+  .rev-row { display:grid; grid-template-columns: 18px 1fr 28px; align-items:center; gap:10px; font-size:.85rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .rev-row .bar { height:8px; border-radius:4px; background:var(--line); overflow:hidden; }
+  .rev-row .bar i { display:block; height:100%; background:#ff9f0a; border-radius:4px; }
+  .rev-cta h3 { margin:0 0 6px; }
+  .rev-cta p { margin:0 0 14px; }
+  .rev-filter { display:flex; align-items:center; gap:10px; margin:22px 0 12px; font-size:.95rem; color:var(--muted); }
+  .rev-filter select { font:inherit; padding:6px 10px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--fg); }
+  .rev { background:var(--card); border-radius:16px; padding:18px 20px; margin:12px 0; }
+  .rev-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .rev-head img { width:40px; height:40px; border-radius:50%; background:var(--line); }
+  .rev-who { display:flex; flex-direction:column; line-height:1.25; }
+  .rev-who a { font-weight:600; color:var(--fg); text-decoration:none; }
+  .rev-who a:hover { text-decoration:underline; }
+  .rev-who small { color:var(--muted); }
+  .rev-meta { margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .rev-tag { font-size:.78rem; padding:2px 9px; border-radius:99px; background:var(--bg); border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .rev p { margin:12px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .rev-empty { background:var(--card); border-radius:16px; padding:28px 20px; text-align:center; color:var(--muted); }
+  .rating-link { color:inherit; text-decoration:none; }
+  .rating-link .stars { font-size:1rem; }
+  .stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:16px; margin: 20px 0 12px; }
+  .stat { background:var(--card); border-radius:16px; padding:18px 16px; text-align:center; }
+  .stat b { display:block; font-size:1.9rem; letter-spacing:-.02em; }
+  .stat span { color:var(--muted); font-size:.85rem; }
+  .small { color:var(--muted); font-size:.9rem; }
+  details { background:var(--card); border-radius:14px; padding: 14px 18px; margin: 10px 0; }
+  details summary { cursor:pointer; font-weight:600; }
+  details div { color:var(--muted); font-size:.95rem; margin-top:8px; }
+  .grid.cards { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .cards a.card { text-decoration:none; color:inherit; display:block; }
+  .cards a.card:hover { outline: 2px solid var(--accent); }
+
+  section { padding: 32px 0; }
+  h2 { font-size: 1.6rem; margin: 0 0 16px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background:var(--card); border-radius: 16px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size:1.05rem; }
   .card p { margin:0; color:var(--muted); font-size:.95rem; }
-  .figure { margin-top:18px; padding-top:16px; border-top:1px solid var(--line); display:flex; gap:22px; font-size:.8125rem; color:var(--muted); }
-  .figure b { display:block; font-size:1.25rem; font-weight:500; color:var(--strong); letter-spacing:-.02em; }
-  .fine { color:var(--muted); font-size:.8125rem; margin-top:16px; }
-
-  /* ---------- terminal ---------- */
-  .term { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
-  .term .bar { display:flex; gap:6px; padding:12px 14px; border-bottom:1px solid var(--line); }
-  .term .bar i { width:10px; height:10px; border-radius:50%; background:var(--line-strong); opacity:.6; }
-  .term pre { margin:0; padding:18px 20px; font-size:.8125rem; line-height:1.9; overflow-x:auto; color:var(--fg); }
-  .term .c { color:var(--muted); } .term .g { color:var(--green); } .term .b { color:var(--blue); } .term .p { color:var(--purple); }
-
-  /* ---------- shots and presets ---------- */
-  .shot { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#0a0a0a; }
-  .shot img { width:100%; display:block; }
-  .presets .card { padding:0; overflow:hidden; }
-  .presets img { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; border-bottom:1px solid var(--line); }
-  .presets .body { padding:14px 16px 16px; }
-  .presets h3 { margin:0 0 4px; font-size:.95rem; } .presets p { font-size:.85rem; }
-
-  /* ---------- install, faq ---------- */
-  .steps { counter-reset:s; display:grid; gap:14px; padding:0; margin:0; list-style:none; }
-  .steps li { counter-increment:s; display:grid; grid-template-columns:32px 1fr; gap:14px; }
-  .steps li::before { content:counter(s); width:28px; height:28px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; font-size:.8125rem; color:var(--muted); }
-  .steps p { margin:3px 0 0; color:var(--muted); font-size:.95rem; } .steps strong { font-weight:500; color:var(--strong); }
-  details { border-bottom:1px solid var(--line); padding:18px 0; }
-  details summary { cursor:pointer; font-weight:500; color:var(--strong); list-style:none; display:flex; justify-content:space-between; gap:20px; }
-  details summary::after { content:"+"; color:var(--muted); } details[open] summary::after { content:"–"; }
-  details p { color:var(--muted); margin:12px 0 0; max-width:680px; }
-  kbd, p code, li code { font:inherit; font-family:ui-monospace, Menlo, monospace; font-size:.85em; background:var(--raised); border:1px solid var(--line); border-radius:4px; padding:1px 5px; }
-
-  footer { margin-top:96px; border-top:1px solid var(--line); padding:32px 0 56px; color:var(--muted); font-size:.875rem; }
-  footer .wrap { display:flex; flex-wrap:wrap; gap:12px 28px; align-items:center; }
-  footer .push { margin-left:auto; }
-
-  .reveal { opacity:0; transform:translateY(18px); transition:opacity .5s ease-out, transform .5s ease-out; }
-  .reveal.in { opacity:1; transform:none; }
-  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } html { scroll-behavior:auto; } }
+  .card img { width:calc(100% + 40px); margin:-20px -20px 14px; display:block; aspect-ratio:16/10; object-fit:cover; border-radius:16px 16px 0 0; }
+  ol.steps { padding-left: 1.3em; } ol.steps li { margin: 8px 0; }
+  .note { background:var(--card); border-radius:16px; padding:16px 20px; color:var(--muted); font-size:.95rem; }
+  pre { background:var(--card); border-radius:12px; padding:12px 16px; overflow-x:auto; font-size:.85rem; }
+  code { background:var(--card); padding:2px 6px; border-radius:6px; font-size:.9em; }
+  pre.cmd { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; overflow-x:auto; margin:0 0 1em; font-size:.92rem; }
+  pre.cmd code { font-family: ui-monospace, "SF Mono", Menlo, monospace; user-select:all; -webkit-user-select:all; background:none; padding:0; }
+  .shots { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; }
+  .shots img { width:100%; display:block; border-radius:12px; border:1px solid var(--line); background:#0a0a0a; }
+  footer { padding-top: 32px; padding-bottom: 48px; color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); margin-top: 32px; }
 </style>
 </head>
 <body>
+<div class="topbar">
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="it" aria-pressed="false">IT</button>
+  </div>
+</div>
+<main>
+  <div class="hero">
+    <img class="logo" src="favicon-192.png" width="96" height="96" alt="Splash logo">
+    <h1>Splash</h1>
+    <p class="tag" data-i18n="tagline">Animated wallpapers for macOS. Pick a preset, tune it, or describe it to the AI agent you already use.</p>
+    <a class="btn" id="download" href="https://github.com/Peppe37/Splash/releases" data-i18n="download">Download</a>
+    <a class="btn sec" href="https://github.com/Peppe37/Splash" data-i18n="github">View on GitHub</a>
+    <p class="meta" id="release-meta"></p>
+    <p class="meta" id="rating-meta" hidden></p>
+    <p class="meta"><a href="#first-launch" data-i18n="helpLink">Can't open the app? See how to allow it.</a></p>
+  </div>
 
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#top"><img src="apple-touch-icon.png" alt="" width="24" height="24">Splash</a>
-    <div class="links">
-      <a href="#how">How it works</a>
-      <a href="#ai">AI</a>
-      <a href="#presets">Presets</a>
-      <a href="#install">Install</a>
-      <a class="gh" href="https://github.com/Peppe37/Splash">GitHub</a>
+  <div class="preview">
+    <div class="screen-box">
+      <div class="screen" id="screen">
+        <div class="menubar" aria-hidden="true">
+          <div class="l"><span><b>Splash</b></span><span>File</span><span>Edit</span><span>View</span></div>
+          <div class="r"><span id="clock"></span></div>
+        </div>
+        <iframe id="demo" title="A live Splash scene" src="scenes/aurora.html"></iframe>
+      </div>
     </div>
-  </div>
-</nav>
-
-<main id="top">
-  <div class="wrap">
-    <header class="hero">
-      <span class="badge" style="--c:var(--purple)">Pre-alpha · free and open source</span>
-      <h1>Make your desktop move.</h1>
-      <p class="lead">Animated and procedural wallpapers for macOS. Pick a preset, tune it with a few controls, or describe it to the AI agent you already use. It runs in a tiny background process, so you forget it is there.</p>
-      <div class="cta">
-        <a class="btn primary" id="download" href="https://github.com/Peppe37/Splash/releases/latest">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11"/></svg>
-          <span id="download-label">Download for macOS</span>
-        </a>
-        <a class="btn" href="https://github.com/Peppe37/Splash">View on GitHub</a>
-      </div>
-      <p class="meta" id="meta">macOS 14 or later · GPL-3.0</p>
-
-      <div class="stage">
-        <div class="screen" id="screen">
-          <div class="menubar"><b>Splash</b><span>File</span><span>Edit</span><span>View</span><span class="r">Wed 9:41</span></div>
-          <iframe id="demo" title="A live Splash scene" src="scenes/aurora.html" loading="eager"></iframe>
-        </div>
-        <div class="controls">
-          <div class="chips" id="chips" role="group" aria-label="Choose a scene"></div>
-          <div class="pickers" id="pickers"></div>
-        </div>
-        <p class="note">This is the real scene code, running in your browser. In the app it is a wallpaper.</p>
-      </div>
-    </header>
+    <div class="tools">
+      <div class="chips" id="chips" role="group" aria-label="Scene"></div>
+      <div class="pickers" id="pickers"></div>
+    </div>
+    <p class="hint" data-i18n="hint">Interactive preview: pick a scene and change its colours. This is the real scene code, running in your browser. In the app it is your wallpaper.</p>
   </div>
 
-  <div class="wrap">
-    <section id="how">
-      <p class="eyebrow">Light by design</p>
-      <h2>Three ways onto your desktop. The lightest one that fits.</h2>
-      <p class="sub">A wallpaper is on all day, next to your real work. So Splash puts a scene on the desktop in the cheapest way the scene allows, and the app you design it in is a separate window you can close.</p>
-      <div class="grid g3">
-        <div class="card reveal">
-          <span class="badge" style="--c:var(--green)">Still</span>
-          <h3>One picture. Nothing runs.</h3>
-          <p>The scene is drawn once at full quality and set as your real macOS wallpaper. No process, no CPU, no memory.</p>
-          <div class="figure"><div><b>0</b>processes</div><div><b>0%</b>CPU</div></div>
-        </div>
-        <div class="card reveal">
-          <span class="badge" style="--c:var(--blue)">Loop</span>
-          <h3>A recorded loop.</h3>
-          <p>Splash records one seamless loop and the system's video decoder plays it. No web view, no drawing.</p>
-          <div class="figure"><div><b>~14 MB</b>runner memory</div><div><b>~1%</b>runner CPU</div></div>
-        </div>
-        <div class="card reveal">
-          <span class="badge" style="--c:var(--purple)">Live</span>
-          <h3>Drawn in real time.</h3>
-          <p>For scenes that react to something. It pauses when covered, on Low Power Mode, when the screen sleeps and when the Mac gets hot.</p>
-          <div class="figure"><div><b>~170 MB</b>with web processes</div><div><b>~7%</b>of one core</div></div>
-        </div>
+  <section>
+    <h2 data-i18n="whatH">What is it?</h2>
+    <p data-i18n="whatP">Splash is a free and open-source app that puts animated and procedural wallpapers on your Mac. A wallpaper is a small folder with a web page and a few controls: start from a preset, change it, or describe what you want to an AI agent you already use. It runs in a tiny background process, so you forget it is there.</p>
+    <p><span class="badge">Alpha</span> <span data-i18n="alphaP">Splash is in early development. Expect rough edges and breaking changes between versions.</span></p>
+  </section>
+
+  <section>
+    <h2 data-i18n="featH">Features</h2>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="f1h">Three ways onto the desktop</h3><p data-i18n="f1p">Still (one picture, nothing runs), Loop (a recorded video, played by the system) or Live (drawn in real time). Splash uses the lightest one the scene allows.</p></div>
+      <div class="card"><h3 data-i18n="f2h">Presets and controls</h3><p data-i18n="f2p">Aurora, waves, stars, ribbons, soft gradients and a dusk. Change colours and speed with live controls, and see it in a large preview.</p></div>
+      <div class="card"><h3 data-i18n="f3h">AI, with your own agent</h3><p data-i18n="f3p">Describe a change in words. Splash runs the agent CLI you are already signed in to (Claude Code today), in the scene's folder. No API key.</p></div>
+      <div class="card"><h3 data-i18n="f4h">Draw and comment</h3><p data-i18n="f4p">Draw on the preview and pin comments. The agent gets the picture and changes only what you pointed at.</p></div>
+      <div class="card"><h3 data-i18n="f5h">Versions you can go back to</h3><p data-i18n="f5p">A version is saved before every AI change, so any change can be undone.</p></div>
+      <div class="card"><h3 data-i18n="f6h">Light on battery</h3><p data-i18n="f6p">It pauses when covered, when the screen sleeps or locks, on Low Power Mode and when the Mac is hot, and lowers its frame rate on battery.</p></div>
+      <div class="card"><h3 data-i18n="f7h">Your own wallpaper stays safe</h3><p data-i18n="f7p">Splash remembers the wallpaper you had and can put it back. A picture of the scene is also set as the real wallpaper, so Mission Control and new displays match.</p></div>
+      <div class="card"><h3 data-i18n="f8h">Command line</h3><p data-i18n="f8p"><code>splash</code> makes pictures and loops, checks a scene and asks an agent from a terminal, with the same engine as the app.</p></div>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <h2 data-i18n="revH">Reviews</h2>
+    <p data-i18n="revIntro">What people who use Splash say, in their own words. Every review is written with a GitHub account and is tied to the version it is about.</p>
+    <div class="rev-top">
+      <div class="card rev-score">
+        <div class="rev-big" id="rev-avg">–</div>
+        <div class="stars" id="rev-stars" role="img" aria-label=""></div>
+        <div class="rev-count" id="rev-count"></div>
       </div>
-      <p class="fine">Measured once, on one MacBook Pro with Apple silicon, a debug build, a simple scene at 30 fps. System decoders and the GPU are not counted. Treat them as a rough guide, not a benchmark.</p>
-    </section>
-
-    <section>
-      <p class="eyebrow">The app</p>
-      <h2>Designed for quiet, not for show.</h2>
-      <p class="sub">Your scenes as live pictures. A large preview, a few honest controls, versions you can go back to. The runner sits in the menu bar and does nothing until the system tells it something changed.</p>
-      <div class="grid g2">
-        <div class="shot reveal"><img src="assets/shots/library.png" alt="The Splash library with scene thumbnails" loading="lazy"></div>
-        <div class="shot reveal"><img src="assets/shots/editor.png" alt="The Splash editor with a large preview and controls" loading="lazy"></div>
+      <div class="card rev-bars" id="rev-bars"></div>
+      <div class="card rev-cta">
+        <h3 data-i18n="revCtaH">Used it? Tell others.</h3>
+        <p data-i18n="revCtaP">Sign in with GitHub, give 1 to 5 stars and a few words. It takes a minute.</p>
+        <a class="btn" id="rev-write" href="https://github.com/Peppe37/Splash/issues/new?template=review.yml" rel="noopener" data-i18n="revWrite">Write a review</a>
       </div>
-    </section>
+    </div>
+    <div class="rev-filter" id="rev-filter" hidden>
+      <label for="rev-version" data-i18n="revVersion">Version</label>
+      <select id="rev-version"></select>
+    </div>
+    <div id="rev-list"></div>
+    <p style="text-align:center"><button type="button" class="btn sec" id="rev-more" hidden data-i18n="revMore">Show more</button></p>
+    <p class="small" data-i18n="revTrust">Every review is a public GitHub issue from a real account (at least two weeks old), one per person per version. Negative reviews stay: only spam and abuse are removed. The maintainer's own reviews are not counted.</p>
+  </section>
 
-    <section id="ai">
-      <p class="eyebrow">Optional AI</p>
-      <h2>Describe it. Draw on it. Use the agent you already have.</h2>
-      <p class="sub">Splash never asks for an API key. It runs the agent CLI you are already signed in to, inside the scene's folder. Draw on the preview, pin a comment, and the agent changes only what you pointed at. Every request saves a version first.</p>
-      <div class="grid g2">
-        <div class="term reveal">
-          <div class="bar"><i></i><i></i><i></i></div>
-<pre><span class="c"># the same engine as the app, from a terminal</span>
-<span class="g">$</span> splash ask dusk <span class="p">"add a stars toggle: about 60 small white dots in the upper sky"</span>
-Asking Claude Code…
-  · Read scene.json
-  · Read index.html
-  · Edit index.html
-  · Edit scene.json
-  · Bash splash lint .
-Added a `stars` bool param (default true) to scene.json. When on,
-index.html draws 60 small white dots in the upper half of the sky.
-Lint reports 0 errors and 0 warnings.
+  <section id="performance">
+    <h2 data-i18n="perfH">Light on your Mac</h2>
+    <p data-i18n="perfP">Splash stays out of the way. Measured once on a MacBook Pro (Apple silicon, macOS 26), with a simple scene at 30 fps:</p>
+    <div class="stats">
+      <div class="stat"><b>0</b><span data-i18n="perfStill">processes for a still</span></div>
+      <div class="stat"><b>14 MB</b><span data-i18n="perfLoopMem">runner memory, loop</span></div>
+      <div class="stat"><b>~1 %</b><span data-i18n="perfLoopCpu">runner CPU, loop</span></div>
+      <div class="stat"><b>130–170 MB</b><span data-i18n="perfLiveMem">memory, live</span></div>
+      <div class="stat"><b>2.1 MB</b><span data-i18n="perfDisk">the DMG</span></div>
+    </div>
+    <p class="small" data-i18n="perfNote">One machine, one run, a debug build; system decoders and the GPU are not counted. A live scene is about 7 % of one core with its web processes, which is why a loop or a still is the default. You can measure it on your own Mac with <code>scripts/benchmark.sh</code>; the details are in the <a href="https://github.com/Peppe37/Splash#performance">README</a>.</p>
+  </section>
 
-<span class="g">$</span> splash snapshot dusk out.png --time 0
-<span class="g">$</span> splash bake aurora loop.mov</pre>
-        </div>
-        <div class="card reveal">
-          <h3 style="margin-top:0">What works today</h3>
-          <p><strong style="font-weight:500;color:var(--strong)">Claude Code</strong> is tested end to end. Codex is wired up but not tested yet. OpenCode is switched off: in testing it edited files outside the scene, so it stays off until that is understood.</p>
-          <p style="margin-top:14px">Agents run with your own login and permissions. Splash tells them to touch only the scene folder and shows what they do, but it cannot sandbox them. A scene is plain HTML, CSS and JavaScript in a folder you own: you can read it, edit it, or version it yourself.</p>
-        </div>
-      </div>
-    </section>
+  <section id="presets">
+    <h2 data-i18n="presetH">Presets</h2>
+    <p data-i18n="presetP">Every preset is a normal scene: copy it, change it with the controls, or hand it to an agent.</p>
+    <div class="grid" id="preset-grid"></div>
+  </section>
 
-    <section id="presets">
-      <p class="eyebrow">Presets</p>
-      <h2>Start from something that already moves.</h2>
-      <p class="sub">Every preset is a normal scene: copy it, change it with the controls, or hand it to an agent.</p>
-      <div class="grid g3 presets" id="preset-grid"></div>
-    </section>
+  <section>
+    <h2 data-i18n="appH">The app</h2>
+    <div class="shots">
+      <img src="assets/shots/library.png" alt="The Splash library with scene thumbnails" loading="lazy">
+      <img src="assets/shots/editor.png" alt="The Splash editor with a large preview and controls" loading="lazy">
+    </div>
+  </section>
 
-    <section>
-      <p class="eyebrow">A scene is a folder</p>
-      <h2>Small, readable, yours.</h2>
-      <p class="sub">A scene is a manifest and a web page. Controls, loop length and permissions are declared in the manifest, and a linter checks the rest, for people and for agents.</p>
-      <div class="term reveal">
-        <div class="bar"><i></i><i></i><i></i></div>
-<pre><span class="c">// scene.json</span>
-{
-  <span class="b">"id"</span>: <span class="p">"aurora"</span>,
-  <span class="b">"tiers"</span>: [<span class="p">"baked"</span>, <span class="p">"live"</span>],
-  <span class="b">"loopSeconds"</span>: 24,
-  <span class="b">"params"</span>: [{ <span class="b">"key"</span>: <span class="p">"colorA"</span>, <span class="b">"type"</span>: <span class="p">"color"</span>, <span class="b">"default"</span>: <span class="p">"#27e1a0"</span> }]
-}
+  <section>
+    <h2 data-i18n="instH">Install</h2>
+    <p data-i18n="instP1">Requires macOS 14 or later. Download the latest build from the <a href="https://github.com/Peppe37/Splash/releases">Releases page</a>, open the DMG and drag Splash to Applications. Then follow the <a href="#first-launch">first launch guide</a> below: macOS will block the app the first time.</p>
+    <p data-i18n="instBrew">With Homebrew, one command (it also skips the first-launch warning):</p>
+    <pre class="cmd"><code>brew install --cask Peppe37/tap/splash</code></pre>
+    <p data-i18n="instP2">Prefer building it yourself? Install <code>xcodegen</code>, run <code>xcodegen generate</code> and open <code>Splash.xcodeproj</code>, or run <code>swift build</code>. See the <a href="https://github.com/Peppe37/Splash#building-from-source">README</a>.</p>
+  </section>
 
-<span class="c">// index.html</span>
-<span class="g">const</span> angle = TAU * splash.time / LOOP;   <span class="c">// same clock for live, loop and still</span>
-ctx.fillStyle = splash.params.colorA;</pre>
-      </div>
-    </section>
+  <section id="first-launch">
+    <h2 data-i18n="glH">First launch: allowing the app</h2>
+    <p data-i18n="glIntro">Splash is not notarized by Apple yet (that requires a paid developer account), so macOS shows a warning saying it cannot verify the app. This is expected. Here is how to open it:</p>
+    <ol class="steps">
+      <li data-i18n="gl1">Open <b>Splash</b> from Applications. A message says it could not be opened. Click <b>Done</b> (do <b>not</b> click “Move to Trash”).</li>
+      <li data-i18n="gl2">Open <b>System Settings → Privacy &amp; Security</b>.</li>
+      <li data-i18n="gl3">Scroll down to the <b>Security</b> section. You will see “Splash.app was blocked”. Click <b>Open Anyway</b>.</li>
+      <li data-i18n="gl4">Confirm with your password or Touch ID, then click <b>Open</b>. You only need to do this once.</li>
+    </ol>
+    <p data-i18n="glTerm">Prefer the Terminal? This removes the quarantine flag and does the same thing:</p>
+    <pre><code>xattr -dr com.apple.quarantine /Applications/Splash.app</code></pre>
+    <p class="note" data-i18n="glTrust">Why trust it? Splash is fully open source: you can read every line of code in the <a href="https://github.com/Peppe37/Splash">repository</a>, or build the app yourself with Xcode and skip this warning altogether. The release is built automatically by GitHub Actions from the tagged source.</p>
+  </section>
 
-    <section id="install">
-      <p class="eyebrow">Install</p>
-      <h2>Get Splash.</h2>
-      <p class="sub">Splash is pre-alpha. There may be no download yet; until there is, build it from source. Needs macOS 14 or later.</p>
-      <div class="grid g2">
-        <div class="card">
-          <h3 style="margin-top:0">From the DMG</h3>
-          <ol class="steps">
-            <li><div><strong>Download</strong><p>Get the latest <code>.dmg</code> from the button above, open it and drag Splash to Applications.</p></div></li>
-            <li><div><strong>Open it the first time</strong><p>The app is not notarized yet, so macOS asks. Control-click Splash, choose <strong>Open</strong>, then <strong>Open</strong> again. Or go to System Settings, Privacy &amp; Security, and choose <strong>Open Anyway</strong>.</p></div></li>
-            <li><div><strong>Pick a preset and press Apply</strong><p>You can close the window: the wallpaper keeps going in the menu bar.</p></div></li>
-          </ol>
-        </div>
-        <div class="term">
-          <div class="bar"><i></i><i></i><i></i></div>
-<pre><span class="c"># from source (Xcode 16 or later)</span>
-<span class="g">$</span> git clone https://github.com/Peppe37/Splash.git
-<span class="g">$</span> cd Splash
-<span class="g">$</span> swift build
-<span class="g">$</span> .build/debug/splash-editor
+  <section id="faq">
+    <h2 data-i18n="faqH">Questions</h2>
+    <details><summary data-i18n="faqQ1">macOS says it can't verify the app</summary><div data-i18n="faqA1">That is normal for the alpha: follow the <a href="#first-launch">first launch guide</a>. It takes four clicks, once.</div></details>
+    <details><summary data-i18n="faqQ2">Does it use my AI API key?</summary><div data-i18n="faqA2">No. Splash has no API key field. The AI feature runs an agent CLI you already installed and signed in to (Claude Code works today), inside the scene's folder. What you type, and any drawing you send, go to that agent, as with any use of it.</div></details>
+    <details><summary data-i18n="faqQ3">Will it drain my battery?</summary><div data-i18n="faqA3">A still wallpaper costs nothing and a loop costs very little. A live scene pauses on Low Power Mode by default, lowers its frame rate on battery, and stops when covered, when the screen sleeps or locks, and when the Mac is hot. You can change these in Settings.</div></details>
+    <details><summary data-i18n="faqQ4">Does it replace my current wallpaper?</summary><div data-i18n="faqA4">While a scene is applied, Splash sets a picture of it as your wallpaper, so Mission Control and new displays match. It remembers the wallpaper you had, and “Put back my previous wallpaper” restores it. A dynamic or Aerial wallpaper can only be restored as a picture.</div></details>
+    <details><summary data-i18n="faqQ5">Why is a moving wallpaper a window?</summary><div data-i18n="faqA5">macOS has no public way to play an animation as the wallpaper itself, so Splash puts a window at the desktop level, under your icons and windows. To limit the side effects it also sets a still picture as the real wallpaper, and the runner stays out of the Dock and the app switcher.</div></details>
+    <details><summary data-i18n="faqQ6">What does it do with my data?</summary><div data-i18n="faqA6">Nothing leaves your Mac: no analytics, no telemetry, no accounts. The wallpaper process makes no network calls. A scene can only use the network if it asks for it. The only network use of the app itself is the check for updates, when you press it.</div></details>
+    <details><summary data-i18n="faqQ7">Is it really free?</summary><div data-i18n="faqA7">Yes. It is free and open source under the GPL-3.0: you can use, study, modify and share it. If you share a modified version, it has to stay under the same license, with its source available.</div></details>
+  </section>
 
-<span class="c"># or the command line only</span>
-<span class="g">$</span> .build/debug/splash presets
-<span class="g">$</span> .build/debug/splash init my-scene --preset aurora</pre>
-        </div>
-      </div>
-    </section>
-
-    <section id="faq">
-      <p class="eyebrow">Questions</p>
-      <h2>Good to know.</h2>
-      <details><summary>Is it free?</summary><p>Yes. Splash is open source under the GPL-3.0. A few paid extras that need servers, such as cloud features, may come later. The code in this repository stays GPL-3.0.</p></details>
-      <details><summary>Does it use my AI API key?</summary><p>No. Splash has no API key field. The AI feature runs an agent CLI you already installed and signed in to (Claude Code works today), in the scene's folder. What you type and any drawing you send go to that agent, as with any use of it.</p></details>
-      <details><summary>Will it drain my battery?</summary><p>A still wallpaper costs nothing and a loop costs very little. A live scene pauses on Low Power Mode by default, lowers its frame rate on battery, and stops when covered, when the screen sleeps or locks, and when the Mac is hot. You can change these in Settings.</p></details>
-      <details><summary>Does it replace my current wallpaper?</summary><p>While a scene is applied, Splash sets a picture of it as your wallpaper, so Mission Control and new displays match. It remembers the wallpaper you had, and "Put back my previous wallpaper" restores it. A dynamic or Aerial wallpaper can only be restored as a picture.</p></details>
-      <details><summary>Why is a moving wallpaper a window?</summary><p>macOS has no public way to play an animation as the wallpaper itself, so Splash puts a window at the desktop level, under your icons and windows. To limit the side effects it also sets a still picture as the real wallpaper, and the runner stays out of the Dock and the app switcher.</p></details>
-      <details><summary>Which Macs?</summary><p>macOS 14 Sonoma or later.</p></details>
-    </section>
-  </div>
+  <section id="support">
+    <h2 data-i18n="supH">Support &amp; community</h2>
+    <p data-i18n="supP">Splash is a free project made by one person. Here is how to get help, and how you can help it grow.</p>
+    <div class="grid cards">
+      <a class="card" href="https://github.com/Peppe37/Splash/discussions"><h3 data-i18n="supC1h">Ask or share an idea</h3><p data-i18n="supC1p">Questions and ideas in GitHub Discussions.</p></a>
+      <a class="card" href="https://github.com/Peppe37/Splash/issues/new/choose"><h3 data-i18n="supC2h">Report a bug</h3><p data-i18n="supC2p">Something broken? Open an issue, it takes a minute.</p></a>
+      <a class="card" href="https://github.com/Peppe37/Splash/blob/main/CONTRIBUTING.md"><h3 data-i18n="supC3h">Contribute</h3><p data-i18n="supC3p">Code, scenes, translations: start from the contributing guide.</p></a>
+      <a class="card" href="https://github.com/Peppe37/Splash"><h3 data-i18n="supC4h">⭐ Star on GitHub</h3><p data-i18n="supC4p">The easiest way to help others find it. Tell a friend too.</p></a>
+    </div>
+    <h3 id="sponsor" data-i18n="spH" style="margin-top:28px">Support the project</h3>
+    <p data-i18n="spP">If Splash is useful to you, you can help keep it going. It pays for the time behind the project, and for the Apple Developer Program, which is what it takes to ship notarized builds with no warning at first launch.</p>
+    <p>
+      <a class="btn" href="https://github.com/sponsors/Peppe37">❤️ GitHub Sponsors</a>
+      <a class="btn sec" href="https://ko-fi.com/giuseppelapietra">☕ Ko-fi</a>
+      <a class="btn sec" href="https://www.buymeacoffee.com/giuseppelapietra">☕ Buy Me a Coffee</a>
+    </p>
+  </section>
 </main>
 
 <footer>
-  <div class="wrap">
-    <span>Splash · GPL-3.0</span>
-    <a href="https://github.com/Peppe37/Splash">Source</a>
-    <a href="https://github.com/Peppe37/Splash/issues">Issues</a>
-    <a href="https://github.com/Peppe37/Splash/blob/main/docs/ARCHITECTURE.md">Architecture</a>
-    <span class="push">Also by Giuseppe: <a href="https://peppe37.github.io/Notcholino/">Notcholino</a></span>
-  </div>
+  <span data-i18n="license">Licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a></span> ·
+  <a href="https://github.com/Peppe37/Splash/blob/main/CHANGELOG.md" data-i18n="changelog">Changelog</a> ·
+  <a href="https://github.com/Peppe37/Splash/releases" data-i18n="releases">Releases</a> ·
+  <a href="https://github.com/Peppe37/Splash/issues" data-i18n="issues">Report an issue</a> ·
+  <a href="https://github.com/Peppe37/Splash/discussions" data-i18n="discussions">Discussions</a> ·
+  <a href="https://github.com/Peppe37/Splash/blob/main/CONTRIBUTING.md" data-i18n="contributing">Contributing</a> ·
+  <a href="https://github.com/Peppe37/Splash/blob/main/SECURITY.md" data-i18n="security">Security</a> ·
+  <a href="#sponsor" data-i18n="sponsor">Sponsor</a> ·
+  <a href="https://peppe37.github.io/Notcholino/">Notcholino</a>
 </footer>
 
 <script>
 (function () {
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var REPO = 'https://github.com/Peppe37/Splash';
+
+  /* ---------- i18n ---------- */
+  var I18N = {
+    en: {
+      title: 'Splash – animated wallpapers for macOS',
+      desc: 'Splash puts animated and procedural wallpapers on your Mac. Pick a preset, tune it, or describe it to the AI agent you already use. Free and open source.',
+      tagline: 'Animated wallpapers for macOS. Pick a preset, tune it, or describe it to the AI agent you already use.',
+      download: 'Download', github: 'View on GitHub',
+      latest: 'Latest release', prerelease: 'pre-release', allReleases: 'see all releases',
+      helpLink: "Can't open the app? See how to allow it.",
+      hint: 'Interactive preview: pick a scene and change its colours. This is the real scene code, running in your browser. In the app it is your wallpaper.',
+      whatH: 'What is it?',
+      whatP: 'Splash is a free and open-source app that puts animated and procedural wallpapers on your Mac. A wallpaper is a small folder with a web page and a few controls: start from a preset, change it, or describe what you want to an AI agent you already use. It runs in a tiny background process, so you forget it is there.',
+      alphaP: 'Splash is in early development. Expect rough edges and breaking changes between versions.',
+      featH: 'Features',
+      f1h: 'Three ways onto the desktop', f1p: 'Still (one picture, nothing runs), Loop (a recorded video, played by the system) or Live (drawn in real time). Splash uses the lightest one the scene allows.',
+      f2h: 'Presets and controls', f2p: 'Aurora, waves, stars, ribbons, soft gradients and a dusk. Change colours and speed with live controls, and see it in a large preview.',
+      f3h: 'AI, with your own agent', f3p: "Describe a change in words. Splash runs the agent CLI you are already signed in to (Claude Code today), in the scene's folder. No API key.",
+      f4h: 'Draw and comment', f4p: 'Draw on the preview and pin comments. The agent gets the picture and changes only what you pointed at.',
+      f5h: 'Versions you can go back to', f5p: 'A version is saved before every AI change, so any change can be undone.',
+      f6h: 'Light on battery', f6p: 'It pauses when covered, when the screen sleeps or locks, on Low Power Mode and when the Mac is hot, and lowers its frame rate on battery.',
+      f7h: 'Your own wallpaper stays safe', f7p: 'Splash remembers the wallpaper you had and can put it back. A picture of the scene is also set as the real wallpaper, so Mission Control and new displays match.',
+      f8h: 'Command line', f8p: '<code>splash</code> makes pictures and loops, checks a scene and asks an agent from a terminal, with the same engine as the app.',
+      revH: 'Reviews',
+      revIntro: 'What people who use Splash say, in their own words. Every review is written with a GitHub account and is tied to the version it is about.',
+      revCtaH: 'Used it? Tell others.', revCtaP: 'Sign in with GitHub, give 1 to 5 stars and a few words. It takes a minute.', revWrite: 'Write a review',
+      revVersion: 'Version', revAll: 'All versions', revMore: 'Show more',
+      revCount1: 'based on 1 review', revCountN: 'based on {n} reviews', revNone: 'No reviews yet. Be the first to say what you think.', revNoneV: 'No reviews for this version yet.',
+      revOut: '{n} out of 5 stars', revAbout: 'about', revBadge: '{n} reviews',
+      revTrust: 'Every review is a public GitHub issue from a real account (at least two weeks old), one per person per version. Negative reviews stay: only spam and abuse are removed. The maintainer\'s own reviews are not counted. The numbers are worked out in the open, <a href="' + REPO + '/blob/main/scripts/gen_reviews.py">here</a>.',
+      perfH: 'Light on your Mac',
+      perfP: 'Splash stays out of the way. Measured once on a MacBook Pro (Apple silicon, macOS 26), with a simple scene at 30 fps:',
+      perfStill: 'processes for a still', perfLoopMem: 'runner memory, loop', perfLoopCpu: 'runner CPU, loop', perfLiveMem: 'memory, live', perfDisk: 'the DMG',
+      perfNote: 'One machine, one run, a debug build; system decoders and the GPU are not counted. A live scene is about 7 % of one core with its web processes, which is why a loop or a still is the default. You can measure it on your own Mac with <code>scripts/benchmark.sh</code>; the details are in the <a href="' + REPO + '#performance">README</a>.',
+      presetH: 'Presets', presetP: 'Every preset is a normal scene: copy it, change it with the controls, or hand it to an agent.',
+      appH: 'The app',
+      instH: 'Install',
+      instP1: 'Requires macOS 14 or later. Download the latest build from the <a href="' + REPO + '/releases">Releases page</a>, open the DMG and drag Splash to Applications. Then follow the <a href="#first-launch">first launch guide</a> below: macOS will block the app the first time.',
+      instBrew: 'With Homebrew, one command (it also skips the first-launch warning):',
+      instP2: 'Prefer building it yourself? Install <code>xcodegen</code>, run <code>xcodegen generate</code> and open <code>Splash.xcodeproj</code>, or run <code>swift build</code>. See the <a href="' + REPO + '#building-from-source">README</a>.',
+      glH: 'First launch: allowing the app',
+      glIntro: 'Splash is not notarized by Apple yet (that requires a paid developer account), so macOS shows a warning saying it cannot verify the app. This is expected. Here is how to open it:',
+      gl1: 'Open <b>Splash</b> from Applications. A message says it could not be opened. Click <b>Done</b> (do <b>not</b> click “Move to Trash”).',
+      gl2: 'Open <b>System Settings → Privacy &amp; Security</b>.',
+      gl3: 'Scroll down to the <b>Security</b> section. You will see “Splash.app was blocked”. Click <b>Open Anyway</b>.',
+      gl4: 'Confirm with your password or Touch ID, then click <b>Open</b>. You only need to do this once.',
+      glTerm: 'Prefer the Terminal? This removes the quarantine flag and does the same thing:',
+      glTrust: 'Why trust it? Splash is fully open source: you can read every line of code in the <a href="' + REPO + '">repository</a>, or build the app yourself with Xcode and skip this warning altogether. The release is built automatically by GitHub Actions from the tagged source.',
+      faqH: 'Questions',
+      faqQ1: "macOS says it can't verify the app", faqA1: 'That is normal for the alpha: follow the <a href="#first-launch">first launch guide</a>. It takes four clicks, once.',
+      faqQ2: 'Does it use my AI API key?', faqA2: "No. Splash has no API key field. The AI feature runs an agent CLI you already installed and signed in to (Claude Code works today), inside the scene's folder. What you type, and any drawing you send, go to that agent, as with any use of it.",
+      faqQ3: 'Will it drain my battery?', faqA3: 'A still wallpaper costs nothing and a loop costs very little. A live scene pauses on Low Power Mode by default, lowers its frame rate on battery, and stops when covered, when the screen sleeps or locks, and when the Mac is hot. You can change these in Settings.',
+      faqQ4: 'Does it replace my current wallpaper?', faqA4: 'While a scene is applied, Splash sets a picture of it as your wallpaper, so Mission Control and new displays match. It remembers the wallpaper you had, and “Put back my previous wallpaper” restores it. A dynamic or Aerial wallpaper can only be restored as a picture.',
+      faqQ5: 'Why is a moving wallpaper a window?', faqA5: 'macOS has no public way to play an animation as the wallpaper itself, so Splash puts a window at the desktop level, under your icons and windows. To limit the side effects it also sets a still picture as the real wallpaper, and the runner stays out of the Dock and the app switcher.',
+      faqQ6: 'What does it do with my data?', faqA6: 'Nothing leaves your Mac: no analytics, no telemetry, no accounts. The wallpaper process makes no network calls. A scene can only use the network if it asks for it. The only network use of the app itself is the check for updates, when you press it.',
+      faqQ7: 'Is it really free?', faqA7: 'Yes. It is free and open source under the GPL-3.0: you can use, study, modify and share it. If you share a modified version, it has to stay under the same license, with its source available.',
+      supH: 'Support & community', supP: 'Splash is a free project made by one person. Here is how to get help, and how you can help it grow.',
+      supC1h: 'Ask or share an idea', supC1p: 'Questions and ideas in GitHub Discussions.',
+      supC2h: 'Report a bug', supC2p: 'Something broken? Open an issue, it takes a minute.',
+      supC3h: 'Contribute', supC3p: 'Code, scenes, translations: start from the contributing guide.',
+      supC4h: '⭐ Star on GitHub', supC4p: 'The easiest way to help others find it. Tell a friend too.',
+      spH: 'Support the project', spP: 'If Splash is useful to you, you can help keep it going. It pays for the time behind the project, and for the Apple Developer Program, which is what it takes to ship notarized builds with no warning at first launch.',
+      license: 'Licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a>',
+      changelog: 'Changelog', releases: 'Releases', issues: 'Report an issue', discussions: 'Discussions', contributing: 'Contributing', security: 'Security', sponsor: 'Sponsor'
+    },
+    it: {
+      title: 'Splash – sfondi animati per macOS',
+      desc: 'Splash mette sfondi animati e procedurali sul tuo Mac. Scegli un preset, regolalo, o descrivilo all\'agente AI che già usi. Gratuito e open source.',
+      tagline: 'Sfondi animati per macOS. Scegli un preset, regolalo, o descrivilo all\'agente AI che già usi.',
+      download: 'Scarica', github: 'Vedi su GitHub',
+      latest: 'Ultima release', prerelease: 'pre-release', allReleases: 'vedi tutte le release',
+      helpLink: "Non riesci ad aprire l'app? Guarda come autorizzarla.",
+      hint: 'Anteprima interattiva: scegli una scena e cambia i colori. È il vero codice della scena, eseguito nel tuo browser. Nell\'app diventa il tuo sfondo.',
+      whatH: 'Che cos\'è?',
+      whatP: 'Splash è un\'app gratuita e open source che mette sfondi animati e procedurali sul tuo Mac. Uno sfondo è una piccola cartella con una pagina web e qualche controllo: parti da un preset, cambialo, o descrivi cosa vuoi a un agente AI che già usi. Gira in un piccolo processo in background, così ti dimentichi che c\'è.',
+      alphaP: 'Splash è in sviluppo iniziale. Aspettati spigoli e modifiche incompatibili tra le versioni.',
+      featH: 'Funzioni',
+      f1h: 'Tre modi di arrivare sulla scrivania', f1p: 'Fermo (un\'immagine, niente in esecuzione), Loop (un video registrato, riprodotto dal sistema) o Live (disegnato in tempo reale). Splash usa il più leggero che la scena permette.',
+      f2h: 'Preset e controlli', f2p: 'Aurora, onde, stelle, nastri, sfumature morbide e un tramonto. Cambia colori e velocità con controlli in tempo reale, e guardalo in una grande anteprima.',
+      f3h: 'AI, con il tuo agente', f3p: 'Descrivi una modifica a parole. Splash esegue la CLI dell\'agente a cui hai già fatto accesso (oggi Claude Code), nella cartella della scena. Nessuna chiave API.',
+      f4h: 'Disegna e commenta', f4p: 'Disegna sull\'anteprima e fissa dei commenti. L\'agente riceve l\'immagine e cambia solo ciò che hai indicato.',
+      f5h: 'Versioni a cui tornare', f5p: 'Prima di ogni modifica AI viene salvata una versione, così ogni cambiamento si può annullare.',
+      f6h: 'Leggero sulla batteria', f6p: 'Va in pausa quando è coperto, quando lo schermo si spegne o si blocca, in Modo Risparmio Energia e quando il Mac è caldo, e abbassa i fotogrammi a batteria.',
+      f7h: 'Il tuo sfondo è al sicuro', f7p: 'Splash ricorda lo sfondo che avevi e può rimetterlo. Un\'immagine della scena viene anche impostata come sfondo vero, così Mission Control e i nuovi schermi coincidono.',
+      f8h: 'Riga di comando', f8p: '<code>splash</code> crea immagini e loop, controlla una scena e interroga un agente da terminale, con lo stesso motore dell\'app.',
+      revH: 'Recensioni',
+      revIntro: 'Cosa dicono, con parole loro, le persone che usano Splash. Ogni recensione è scritta con un account GitHub ed è legata alla versione di cui parla.',
+      revCtaH: 'Lo usi? Raccontalo agli altri.', revCtaP: 'Accedi con GitHub, dai da 1 a 5 stelle e poche parole. Ci vuole un minuto.', revWrite: 'Scrivi una recensione',
+      revVersion: 'Versione', revAll: 'Tutte le versioni', revMore: 'Mostra altre',
+      revCount1: 'basato su 1 recensione', revCountN: 'basato su {n} recensioni', revNone: 'Ancora nessuna recensione. Sii il primo a dire cosa ne pensi.', revNoneV: 'Ancora nessuna recensione per questa versione.',
+      revOut: '{n} stelle su 5', revAbout: 'su', revBadge: '{n} recensioni',
+      revTrust: 'Ogni recensione è una issue pubblica di GitHub di un account reale (aperto da almeno due settimane), una per persona e per versione. Le recensioni negative restano: si tolgono solo spam e abusi. Le recensioni del maintainer non contano. I numeri si calcolano alla luce del sole, <a href="' + REPO + '/blob/main/scripts/gen_reviews.py">qui</a>.',
+      perfH: 'Leggero sul tuo Mac',
+      perfP: 'Splash non ti ingombra. Misurato una volta su un MacBook Pro (Apple silicon, macOS 26), con una scena semplice a 30 fps:',
+      perfStill: 'processi per un fermo', perfLoopMem: 'memoria del runner, loop', perfLoopCpu: 'CPU del runner, loop', perfLiveMem: 'memoria, live', perfDisk: 'il DMG',
+      perfNote: 'Una macchina, una misura, una build di debug; i decoder di sistema e la GPU non sono contati. Una scena live usa circa il 7 % di un core con i suoi processi web, per questo di default si usa un loop o un fermo. Puoi misurarlo sul tuo Mac con <code>scripts/benchmark.sh</code>; i dettagli sono nel <a href="' + REPO + '#performance">README</a>.',
+      presetH: 'Preset', presetP: 'Ogni preset è una scena normale: copiala, cambiala con i controlli, o passala a un agente.',
+      appH: 'L\'app',
+      instH: 'Installazione',
+      instP1: 'Richiede macOS 14 o successivo. Scarica l\'ultima build dalla <a href="' + REPO + '/releases">pagina delle Release</a>, apri il DMG e trascina Splash in Applicazioni. Poi segui la <a href="#first-launch">guida al primo avvio</a> qui sotto: macOS bloccherà l\'app la prima volta.',
+      instBrew: 'Con Homebrew, un solo comando (salta anche l\'avviso del primo avvio):',
+      instP2: 'Preferisci compilarla tu? Installa <code>xcodegen</code>, esegui <code>xcodegen generate</code> e apri <code>Splash.xcodeproj</code>, oppure esegui <code>swift build</code>. Vedi il <a href="' + REPO + '#building-from-source">README</a>.',
+      glH: 'Primo avvio: autorizzare l\'app',
+      glIntro: 'Splash non è ancora notarizzata da Apple (serve un account sviluppatore a pagamento), quindi macOS mostra un avviso che dice di non poter verificare l\'app. È normale. Ecco come aprirla:',
+      gl1: 'Apri <b>Splash</b> da Applicazioni. Un messaggio dice che non è stata aperta. Clicca <b>Fine</b> (<b>non</b> cliccare “Sposta nel Cestino”).',
+      gl2: 'Apri <b>Impostazioni di Sistema → Privacy e sicurezza</b>.',
+      gl3: 'Scorri fino alla sezione <b>Sicurezza</b>. Vedrai “Splash.app è stata bloccata”. Clicca <b>Apri comunque</b>.',
+      gl4: 'Conferma con la password o Touch ID, poi clicca <b>Apri</b>. Lo devi fare una volta sola.',
+      glTerm: 'Preferisci il Terminale? Questo comando rimuove il flag di quarantena e fa la stessa cosa:',
+      glTrust: 'Perché fidarsi? Splash è completamente open source: puoi leggere ogni riga di codice nel <a href="' + REPO + '">repository</a>, oppure compilare l\'app da solo con Xcode ed evitare del tutto questo avviso. La release è costruita automaticamente da GitHub Actions a partire dal codice taggato.',
+      faqH: 'Domande',
+      faqQ1: 'macOS dice che non può verificare l\'app', faqA1: 'È normale nell\'alpha: segui la <a href="#first-launch">guida al primo avvio</a>. Bastano quattro clic, una volta sola.',
+      faqQ2: 'Usa la mia chiave API di AI?', faqA2: 'No. Splash non ha nessun campo per una chiave API. La funzione AI esegue una CLI di agente che hai già installato e a cui hai già fatto accesso (oggi funziona Claude Code), nella cartella della scena. Quello che scrivi e gli eventuali disegni vanno a quell\'agente, come per qualsiasi suo uso.',
+      faqQ3: 'Mi scarica la batteria?', faqA3: 'Uno sfondo fermo non costa niente e un loop costa pochissimo. Una scena live va in pausa in Modo Risparmio Energia di default, abbassa i fotogrammi a batteria, e si ferma quando è coperta, quando lo schermo si spegne o si blocca, e quando il Mac è caldo. Puoi cambiarlo nelle Impostazioni.',
+      faqQ4: 'Sostituisce il mio sfondo attuale?', faqA4: 'Finché una scena è applicata, Splash imposta un\'immagine della scena come sfondo, così Mission Control e i nuovi schermi coincidono. Ricorda lo sfondo che avevi, e “Rimetti il mio sfondo precedente” lo ripristina. Uno sfondo dinamico o Aerial si può ripristinare solo come immagine.',
+      faqQ5: 'Perché uno sfondo animato è una finestra?', faqA5: 'macOS non ha un modo pubblico per riprodurre un\'animazione come sfondo vero e proprio, quindi Splash mette una finestra al livello della scrivania, sotto icone e finestre. Per limitare gli effetti collaterali imposta anche un\'immagine come sfondo vero, e il runner resta fuori dal Dock e dal selettore delle app.',
+      faqQ6: 'Cosa fa con i miei dati?', faqA6: 'Niente esce dal tuo Mac: nessuna analisi, nessuna telemetria, nessun account. Il processo dello sfondo non fa chiamate di rete. Una scena può usare la rete solo se lo chiede. L\'unico uso di rete dell\'app è il controllo degli aggiornamenti, quando lo premi.',
+      faqQ7: 'È davvero gratuita?', faqA7: 'Sì. È gratuita e open source con licenza GPL-3.0: puoi usarla, studiarla, modificarla e condividerla. Se condividi una versione modificata, deve restare con la stessa licenza e con il codice disponibile.',
+      supH: 'Supporto e community', supP: 'Splash è un progetto gratuito fatto da una persona. Ecco come avere aiuto, e come puoi aiutarlo a crescere.',
+      supC1h: 'Chiedi o proponi un\'idea', supC1p: 'Domande e idee nelle Discussioni di GitHub.',
+      supC2h: 'Segnala un bug', supC2p: 'Qualcosa non va? Apri una issue, ci vuole un minuto.',
+      supC3h: 'Contribuisci', supC3p: 'Codice, scene, traduzioni: parti dalla guida per contribuire.',
+      supC4h: '⭐ Metti una stella su GitHub', supC4p: 'Il modo più facile per aiutare gli altri a trovarlo. Dillo anche a un amico.',
+      spH: 'Sostieni il progetto', spP: 'Se Splash ti è utile, puoi aiutarlo ad andare avanti. Finanzia il tempo dietro al progetto e l\'Apple Developer Program, che serve per distribuire build notarizzate senza avvisi al primo avvio.',
+      license: 'Licenza <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0</a>',
+      changelog: 'Changelog', releases: 'Release', issues: 'Segnala un problema', discussions: 'Discussioni', contributing: 'Contribuire', security: 'Sicurezza', sponsor: 'Sostieni'
+    }
+  };
+
+  function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  function detectLang() {
+    var saved = safeGet('splash-lang');
+    if (saved && I18N[saved]) return saved;
+    try {
+      var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language];
+      for (var i = 0; i < list.length; i++) {
+        var code = String(list[i] || '').toLowerCase().slice(0, 2);
+        if (I18N[code]) return code;
+      }
+    } catch (e) {}
+    return 'en';
+  }
+
+  var lang = detectLang();
+  var release = null;
+  function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || ''; }
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = t('title');
+    var md = document.querySelector('meta[name="description"]');
+    if (md) md.setAttribute('content', t('desc'));
+    document.querySelectorAll('[data-i18n]').forEach(function (el) { el.innerHTML = t(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === lang)); });
+    renderRelease();
+    updateWriteLink();
+    renderReviews();
+    renderClock();
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.addEventListener('click', function () { lang = b.dataset.lang; safeSet('splash-lang', lang); applyLang(); });
+  });
+
+  /* ---------- Release info ---------- */
+  function renderRelease() {
+    var el = document.getElementById('release-meta');
+    if (!release) { el.innerHTML = '<a href="' + REPO + '/releases">' + t('allReleases') + '</a>'; return; }
+    el.innerHTML = t('latest') + ': <a href="' + release.html_url + '">' + release.tag_name + '</a>' +
+      (release.prerelease ? ' <span class="badge">' + t('prerelease') + '</span>' : '');
+  }
+  fetch('https://api.github.com/repos/Peppe37/Splash/releases?per_page=30')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (list) {
+      release = (list || []).filter(function (r) { return /^v\d/.test(r.tag_name); })[0];
+      if (!release) return;
+      var asset = (release.assets || [])[0];
+      if (asset) document.getElementById('download').href = asset.browser_download_url;
+      renderRelease();
+      updateWriteLink();
+    }).catch(function () {});
+
+  /* ---------- Reviews (from reviews.json, built from GitHub issues) ---------- */
+  var reviewData = null, revVersion = '', revShown = 6;
+  var NF = function (n) { return String(Math.round(n * 10) / 10); };
+  function starString(n) {
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += '<span class="' + (i <= Math.round(n) ? 'on' : '') + '">★</span>';
+    return s;
+  }
+  function updateWriteLink() {
+    var a = document.getElementById('rev-write');
+    if (!a) return;
+    var v = release && release.tag_name ? release.tag_name.replace(/^v/, '') : '';
+    a.href = REPO + '/issues/new?template=review.yml' + (v ? '&version=' + encodeURIComponent(v) : '');
+  }
+  function cmpVersion(a, b) {
+    var pa = a.split('-')[0].split('.').map(Number), pb = b.split('-')[0].split('.').map(Number);
+    for (var i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pb[i] - pa[i];
+    return 0;
+  }
+  function renderReviews() {
+    if (!reviewData) return;
+    var all = reviewData.reviews || [];
+    var list = revVersion ? all.filter(function (r) { return r.version === revVersion; }) : all;
+    var n = list.length, sum = list.reduce(function (s, r) { return s + r.rating; }, 0), avg = n ? sum / n : 0;
+    document.getElementById('rev-avg').textContent = n ? NF(avg) : '–';
+    var st = document.getElementById('rev-stars');
+    st.innerHTML = starString(avg);
+    st.setAttribute('aria-label', n ? t('revOut').replace('{n}', NF(avg)) : '');
+    document.getElementById('rev-count').textContent = n === 0 ? '' : (n === 1 ? t('revCount1') : t('revCountN').replace('{n}', n));
+    var bars = '';
+    for (var s = 5; s >= 1; s--) {
+      var c = list.filter(function (r) { return r.rating === s; }).length;
+      bars += '<div class="rev-row"><span>' + s + '</span><div class="bar"><i style="width:' + (n ? Math.round(c / n * 100) : 0) + '%"></i></div><span>' + c + '</span></div>';
+    }
+    document.getElementById('rev-bars').innerHTML = bars;
+
+    var sel = document.getElementById('rev-version'), versions = Object.keys(reviewData.byVersion || {}).sort(cmpVersion);
+    document.getElementById('rev-filter').hidden = versions.length < 2;
+    if (sel.options.length !== versions.length + 1 || sel.dataset.lang !== lang) {
+      sel.innerHTML = '';
+      var o = document.createElement('option'); o.value = ''; o.textContent = t('revAll'); sel.appendChild(o);
+      versions.forEach(function (v) {
+        var op = document.createElement('option'); op.value = v;
+        op.textContent = v + ' (' + reviewData.byVersion[v].count + ')'; sel.appendChild(op);
+      });
+      sel.dataset.lang = lang;
+    }
+    sel.value = revVersion;
+
+    var box = document.getElementById('rev-list');
+    box.textContent = '';
+    if (!n) {
+      var empty = document.createElement('div'); empty.className = 'rev-empty';
+      empty.textContent = all.length ? t('revNoneV') : t('revNone');
+      box.appendChild(empty);
+    }
+    list.slice(0, revShown).forEach(function (r) {
+      // Everything from a review goes in as text, never as HTML
+      var card = document.createElement('article'); card.className = 'rev';
+      var head = document.createElement('div'); head.className = 'rev-head';
+      var img = document.createElement('img'); img.src = 'https://github.com/' + encodeURIComponent(r.user) + '.png?size=80'; img.alt = ''; img.width = 40; img.height = 40; img.loading = 'lazy';
+      var who = document.createElement('div'); who.className = 'rev-who';
+      var a = document.createElement('a'); a.href = 'https://github.com/' + encodeURIComponent(r.user); a.textContent = r.user; a.rel = 'noopener';
+      var small = document.createElement('small');
+      try { small.textContent = new Intl.DateTimeFormat(lang, { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(r.date)); } catch (e) { small.textContent = r.date.slice(0, 10); }
+      who.appendChild(a); who.appendChild(small);
+      var meta = document.createElement('div'); meta.className = 'rev-meta';
+      var stars = document.createElement('span'); stars.className = 'stars'; stars.innerHTML = starString(r.rating); stars.setAttribute('role', 'img'); stars.setAttribute('aria-label', t('revOut').replace('{n}', r.rating));
+      var ver = document.createElement('a'); ver.className = 'rev-tag'; ver.textContent = 'v' + r.version; ver.href = r.url; ver.rel = 'noopener';
+      meta.appendChild(stars); meta.appendChild(ver);
+      if (r.item) { var it = document.createElement('span'); it.className = 'rev-tag'; it.textContent = t('revAbout') + ' ' + r.item; meta.appendChild(it); }
+      head.appendChild(img); head.appendChild(who); head.appendChild(meta);
+      var p = document.createElement('p'); p.textContent = r.text;
+      card.appendChild(head); card.appendChild(p); box.appendChild(card);
+    });
+    document.getElementById('rev-more').hidden = list.length <= revShown;
+
+    var badge = document.getElementById('rating-meta');
+    if (reviewData.count) {
+      badge.hidden = false;
+      badge.innerHTML = '<a class="rating-link" href="#reviews"><span class="stars">' + starString(reviewData.average) + '</span> ' + NF(reviewData.average) + ' · ' + t('revBadge').replace('{n}', reviewData.count) + '</a>';
+    }
+  }
+  fetch('reviews.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (d) { reviewData = d; renderReviews(); })
+    .catch(function () { reviewData = { count: 0, average: 0, reviews: [], byVersion: {} }; renderReviews(); });
+  document.getElementById('rev-version').addEventListener('change', function (e) { revVersion = e.target.value; revShown = 6; renderReviews(); });
+  document.getElementById('rev-more').addEventListener('click', function () { revShown += 6; renderReviews(); });
+
+  /* ---------- Menu bar clock of the preview ---------- */
+  function renderClock() {
+    var el = document.getElementById('clock');
+    if (!el) return;
+    try { el.textContent = new Intl.DateTimeFormat(lang, { weekday: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date()); } catch (e) {}
+  }
+  setInterval(renderClock, 30000);
+
+  /* ---------- The live scenes ---------- */
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var frame = document.getElementById('demo');
   var chips = document.getElementById('chips');
   var pickers = document.getElementById('pickers');
   var grid = document.getElementById('preset-grid');
-  var current = null;
 
   function show(scene) {
-    current = scene;
     [].forEach.call(chips.children, function (c) { c.setAttribute('aria-pressed', String(c.dataset.id === scene.id)); });
-    if (reduced || !scene.animated) {
-      // A still preview: no animation for people who asked for none, and for scenes that are a single picture.
-      frame.removeAttribute('src');
-      frame.srcdoc = '<body style="margin:0"><img src="' + new URL('assets/presets/' + scene.id + '.png', location.href).href + '" style="width:100%;height:100%;object-fit:cover"></body>';
-    } else {
-      frame.removeAttribute('srcdoc');
-      frame.src = 'scenes/' + scene.id + '.html';
-    }
+    // Every scene is loaded as the real page, so its colour controls always work (a still scene redraws when a colour
+    // changes). A scene that moves is paused after a few frames for people who asked for less motion.
+    frame.src = 'scenes/' + scene.id + '.html' + (reduced && scene.animated ? '?still' : '');
     pickers.innerHTML = '';
     scene.params.slice(0, 3).forEach(function (p) {
       var label = document.createElement('label');
-      label.style.display = 'flex'; label.style.alignItems = 'center'; label.style.gap = '6px';
       var input = document.createElement('input');
       input.type = 'color'; input.value = p['default']; input.setAttribute('aria-label', p.label);
       input.addEventListener('input', function () {
         var message = { params: {} }; message.params[p.key] = input.value;
-        frame.contentWindow.postMessage(message, '*');
+        if (frame.contentWindow) frame.contentWindow.postMessage(message, '*');
       });
       label.appendChild(input); label.appendChild(document.createTextNode(p.label));
       pickers.appendChild(label);
@@ -367,35 +608,21 @@ ctx.fillStyle = splash.params.colorA;</pre>
     scenes = scenes.filter(function (s) { return s.id !== 'blank'; });
     scenes.forEach(function (scene) {
       var chip = document.createElement('button');
-      chip.className = 'chip'; chip.textContent = scene.name; chip.dataset.id = scene.id; chip.setAttribute('aria-pressed', 'false');
+      chip.type = 'button'; chip.className = 'chip'; chip.textContent = scene.name; chip.dataset.id = scene.id; chip.setAttribute('aria-pressed', 'false');
       chip.addEventListener('click', function () { show(scene); });
       chips.appendChild(chip);
 
       var card = document.createElement('div');
-      card.className = 'card reveal';
-      card.innerHTML = '<img loading="lazy" alt="" src="assets/presets/' + scene.id + '.png"><div class="body"><h3></h3><p></p></div>';
+      card.className = 'card';
+      card.innerHTML = '<img loading="lazy" alt="" src="assets/presets/' + scene.id + '.png"><h3></h3><p></p>';
       card.querySelector('h3').textContent = scene.name;
       card.querySelector('p').textContent = scene.summary;
       grid.appendChild(card);
-      observe(card);
     });
     show(scenes.filter(function (s) { return s.id === 'aurora'; })[0] || scenes[0]);
   });
 
-  // The download button follows the latest release, if there is one.
-  fetch('https://api.github.com/repos/Peppe37/Splash/releases/latest').then(function (r) { return r.ok ? r.json() : null; }).then(function (release) {
-    var meta = document.getElementById('meta');
-    if (!release) { meta.textContent = 'No download yet: build it from source below · macOS 14 or later · GPL-3.0'; return; }
-    var dmg = (release.assets || []).filter(function (a) { return /\.dmg$/.test(a.name); })[0];
-    if (dmg) document.getElementById('download').href = dmg.browser_download_url;
-    meta.textContent = release.tag_name + ' · macOS 14 or later · GPL-3.0';
-  }).catch(function () {});
-
-  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: 0.12 }) : null;
-  function observe(el) { if (io) io.observe(el); else el.classList.add('in'); }
-  [].forEach.call(document.querySelectorAll('.reveal'), observe);
+  applyLang();
 })();
 </script>
 </body>

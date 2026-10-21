@@ -45,7 +45,7 @@ A change that makes the runner do more work while idle will not be merged. If yo
 
 ## License and CLA
 
-Splash is [GPL-3.0](LICENSE). Contributions are accepted under the terms of the [CLA](CLA.md), which lets the maintainer also distribute the project under other terms (for example in the Mac App Store). The CLA text is a draft and will be finalized before the repository accepts outside contributions.
+Splash is [GPL-3.0](LICENSE). Contributions are accepted under the terms of the [CLA](CLA.md), which lets the maintainer also distribute the project under other terms. The CLA text is a draft and will be finalized before the repository accepts outside contributions.
 
 New dependencies must be permissively licensed (MIT, BSD, Apache-2.0).
 

@@ -373,3 +373,19 @@ struct FingerprintTests {
         }
     }
 }
+
+@Suite("VersionOrder")
+struct VersionOrderTests {
+    @Test func comparesNumbersNotText() {
+        #expect(VersionOrder.isNewer("0.2.0-alpha", than: "0.1.9-alpha"))
+        #expect(VersionOrder.isNewer("0.10.0-alpha", than: "0.9.0-alpha"))
+        #expect(!VersionOrder.isNewer("0.1.0-alpha", than: "0.1.0-alpha"))
+        #expect(!VersionOrder.isNewer("0.1.0-alpha", than: "0.1.1-alpha"))
+        #expect(VersionOrder.isNewer("1.0.0", than: "0.28.2-alpha"))
+    }
+
+    @Test func aDevelopmentBuildIsOlderThanAnyRelease() {
+        #expect(VersionOrder.isNewer("0.1.0-alpha", than: "dev"))
+        #expect(!VersionOrder.isNewer("nonsense", than: "0.1.0-alpha"))
+    }
+}

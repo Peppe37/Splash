@@ -62,3 +62,6 @@ InjectionProject/
 Package.resolved
 *.xcodeproj
 .DS_Store
+
+# Built by scripts/gen_reviews.py in the Pages workflow
+site/reviews.json

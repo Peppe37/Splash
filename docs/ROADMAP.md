@@ -46,7 +46,6 @@ Nothing here has a date.
 ## Later, maybe
 
 - A Rust core for headless baking and CPU generators, if Swift proves limiting
-- Mac App Store release and a paid tier (needs the CLA in place, and a check of the App Store terms against the GPL)
 
 ## Open questions
 

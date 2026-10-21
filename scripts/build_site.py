@@ -33,9 +33,9 @@ for folder in folders:
     html = (folder / manifest.get("entry", "index.html")).read_text()
     params = {p["key"]: p["default"] for p in manifest.get("params", [])}
 
-    boot = "window.__splashBoot = %s;" % json.dumps(
-        {"fps": min(manifest.get("fps", 30), 30), "params": params, "stillAfter": 0, "detail": 1.5}
-    )
+    # ?still draws a few frames and stops, for visitors who asked their system for less motion.
+    boot = "window.__splashBoot = {fps: %d, params: %s, stillAfter: /[?&]still/.test(location.search) ? 3 : 0, detail: 1.5};" % (
+        min(manifest.get("fps", 30), 30), json.dumps(params))
     # The page can send new parameter values, so the website's colour pickers change the scene.
     bridge = (
         "window.addEventListener('message', function (event) {\n"

@@ -4,7 +4,7 @@
 
 ## Why a CLA
 
-Splash is released under the [GPL-3.0](LICENSE). The maintainer may also want to distribute it under other terms in the future, for example in the Mac App Store, or with paid features. The GPL does not allow that for code written by other people unless they agree to it. A CLA lets contributors keep their copyright while granting the maintainer that right.
+Splash is released under the [GPL-3.0](LICENSE). The maintainer may want to distribute it under other terms in the future. The GPL does not allow that for code written by other people unless they agree to it. A CLA lets contributors keep their copyright while granting the maintainer that right.
 
 ## Intent of the final text
 
@@ -26,4 +26,3 @@ By contributing, you:
 - Individual vs. corporate CLA
 - Tooling (for example CLA Assistant)
 - Whether a DCO sign-off is also required
-- A check of Mac App Store terms against the license mix

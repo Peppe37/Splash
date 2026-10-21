@@ -4,8 +4,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-alpha] - 2026-10-21
+
 ### Added
-- Redesigned app: a library with real thumbnails, a flat editor close to HyperFrames' look, a prompt under the preview, an app icon.
+- First alpha. A library with real thumbnails, a flat editor close to HyperFrames' look, a prompt under the preview, an app icon.
 - Scenes draw at the resolution the host asks for (`splash.detail`): full quality for pictures and recordings, reduced only for live wallpapers. Presets use fractions of the canvas, so they look the same at any size.
 - A still picture of the scene is set as the real wallpaper under a moving one; the previous wallpaper is remembered and can be put back. New displays get it too.
 - Website (`site/`) with the real scenes running live, built from the presets; DMG release workflow.
@@ -18,3 +20,5 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 - Agent bridge: Claude Code tested. Codex wired up, untested. OpenCode switched off (it edited files outside the scene).
 - XcodeGen project: the editor app carries the runner app and the command line tool.
 - Documentation, community files, CI and release workflows.
+- Settings: power choices, and an About page with the version, feedback links, a manual update check and ways to support the project.
+- Reviews, support and donation links, issue forms, Homebrew cask and a repeatable benchmark (`scripts/benchmark.sh`), set up the same way as Notcholino.

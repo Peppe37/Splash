@@ -2,11 +2,16 @@ name: Bug report
 description: Something doesn't work as it should
 labels: [bug]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please check the [README](https://github.com/Peppe37/Splash#readme) (first launch, known limits) and existing issues first.
   - type: input
     id: version
     attributes:
       label: Splash version
-      placeholder: "0.1.0"
+      description: Settings → About, or the name of the DMG you downloaded.
+      placeholder: "0.1.0-alpha"
     validations:
       required: true
   - type: input
@@ -20,30 +25,34 @@ body:
     id: what
     attributes:
       label: What happened?
-      description: What you did, what you expected, and what you saw instead. Screenshots or a short screen recording help.
+      description: What you did, what you expected, and what you saw instead. Screenshots or a short screen recording help a lot.
     validations:
       required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Pick the Aurora preset
+        2. Apply it as Loop
+        3. ...
   - type: dropdown
     id: area
     attributes:
       label: Area
       options:
-        - Wallpaper window / runner
-        - Scene format or linter
+        - Wallpaper on the desktop (Spaces, displays, Mission Control)
         - Editor
-        - AI agents
+        - AI agent chat
+        - Presets and scenes
         - Performance (CPU, memory, battery)
-        - Documentation
+        - Command line
+        - Installation / first launch
         - Other
     validations:
       required: true
   - type: textarea
-    id: scene
-    attributes:
-      label: Scene
-      description: Which scene, and its scene.json if it is your own.
-  - type: textarea
     id: perf
     attributes:
       label: CPU and memory (for performance bugs)
-      description: Activity Monitor values for the runner, and the output of `splash doctor`.
+      description: Activity Monitor values for Splash Runner, and the output of `splash doctor`.

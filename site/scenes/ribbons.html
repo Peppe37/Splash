@@ -10,7 +10,7 @@
 </head>
 <body>
 <script>
-window.__splashBoot = {"fps": 30, "params": {"colorA": "#ff4d8d", "colorB": "#4d9bff", "background": "#0a0714", "speed": 1}, "stillAfter": 0, "detail": 1.5};
+window.__splashBoot = {fps: 30, params: {"colorA": "#ff4d8d", "colorB": "#4d9bff", "background": "#0a0714", "speed": 1}, stillAfter: /[?&]still/.test(location.search) ? 3 : 0, detail: 1.5};
 (function () {
   var boot = window.__splashBoot;
   var nativeRAF = window.requestAnimationFrame.bind(window);

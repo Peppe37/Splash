@@ -14,15 +14,27 @@ Being light is the main feature. A wallpaper is on all day, on laptops, next to 
 
 ## Measured
 
-One MacBook Pro (Apple silicon, macOS 26.6), debug build, sampled with `top` over 4 seconds, Low Power Mode pause switched off for the test. Not a benchmark: one machine, one run per case, and decoding done by system daemons (`mediaplaybackd`, the GPU) is not counted.
+One MacBook Pro (Apple silicon, macOS 26.6), debug build, simple scenes at 30 fps, sampled with `top`, "pause in Low Power Mode" switched off for the test. Not a benchmark: one machine, two runs, and decoding done by system daemons (`mediaplaybackd`, the GPU) is not counted.
 
 | Case | Runner | Web processes | Total |
 | --- | --- | --- | --- |
-| Live, `waves` at 30 fps | 1.6% CPU, 19 MB | 2 processes, about 5% CPU, 150 MB | about 6.6% CPU, about 170 MB |
-| Baked, `aurora` loop | 0.9% CPU, 14 MB | none | 0.9% CPU, 14 MB |
+| Live, `waves`, first run | 1.6% CPU, 19 MB | 2 processes, about 5% CPU, 150 MB | about 6.6% CPU, about 170 MB |
+| Live, `waves`, `scripts/benchmark.sh` | 1.6% CPU, 18 MB | 2 processes, 5.1% CPU, 115 MB | 6.7% CPU, 133 MB |
+| Loop, `aurora`, first run | 0.9% CPU, 14 MB | none | 0.9% CPU, 14 MB |
+| Loop, `aurora`, `scripts/benchmark.sh` | 1.4% CPU, 14 MB | none | 1.4% CPU, 14 MB |
 | Paused (Low Power Mode) | 0% CPU, 50 to 70 MB with a still frame held | | |
 
-This is why the baked tier is the default for scenes that loop: about a tenth of the memory and no web processes. A release-build measurement and a CI benchmark are still to do.
+Repeat it on your Mac:
+
+```sh
+swift build
+scripts/benchmark.sh registry/presets/waves 10          # live
+scripts/benchmark.sh registry/presets/aurora 10 --loop  # loop
+```
+
+Close other web views first: the script counts the WebKit processes the runner starts by comparing with the ones that already exist.
+
+The loop is the default for scenes that loop: about a tenth of the memory, no web processes. A release-build measurement and a CI benchmark are still to do.
 
 ## Rules
 
