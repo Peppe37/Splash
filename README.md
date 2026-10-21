@@ -64,6 +64,7 @@ Splash is a free and open-source app that puts animated and procedural wallpaper
 - **A real wallpaper underneath**: a picture of the scene is set as the macOS wallpaper too, so Mission Control, Space changes and new displays match. The wallpaper you had is remembered and can be put back.
 - **Command line**: `splash` makes pictures and loops, checks a scene, and asks an agent from a terminal. See [Usage](#usage).
 - **Open scenes**: a scene is plain HTML, CSS and JavaScript in a folder you own. A linter checks it, for people and for agents.
+- **Updates in one click**: when a new version is out, one button downloads it, checks it and restarts the app, keeping your permissions and starting the wallpaper again.
 - **Native settings**: power choices (pause on battery, pause in Low Power Mode, frame rate on battery) and an About page with updates, feedback and support.
 
 ## Screenshots
@@ -155,6 +156,9 @@ That is normal for the alpha: see [First launch](#first-launch-from-the-dmg-allo
 **Does it use my AI API key?**
 No. Splash has no API key field. The AI feature runs an agent CLI you already installed and signed in to (Claude Code works today), inside the scene's folder. What you type, and any drawing you send, go to that agent, as with any use of it.
 
+**How do I update?**
+When a new version is out, the library shows an **Update** button and **Settings → About** has **Update and restart**: it downloads the release from this repository, checks that it is signed with the same identity as the app you are running, replaces the app, opens it again, and starts the wallpaper again if it was running. Your permissions are kept. With Homebrew, `brew upgrade --cask splash` does the same. A copy that is not signed with the project's certificate (a build you made yourself) is not updated this way: the app says so and points to the release page.
+
 **Which agents work?**
 Claude Code is tested. Codex is wired up but not tested yet. OpenCode is switched off: in testing it edited files outside the scene. Details in [docs/AGENTS_INTEGRATION.md](docs/AGENTS_INTEGRATION.md).
 
@@ -177,7 +181,7 @@ Quit it from the menu bar item, then drag **Splash** from Applications to the Tr
 
 - No analytics, no telemetry, no accounts. Splash never sends your scenes or your drawings anywhere by itself.
 - The wallpaper process (the runner) makes no network calls. A scene can only reach the network if its manifest asks for it, and a scene that uses a remote address without asking fails the linter.
-- The app talks to GitHub only when you press **Check for updates** in **Settings → About**: one small request for the list of releases. It never downloads or installs anything by itself.
+- The editor asks GitHub once a day, while it is open, for the list of releases (a single small request, usually answered "nothing changed") to tell you when there is a newer version. You can switch it off in **Settings → About**. It never downloads or installs anything by itself: **Update and restart** does it when you press it. The wallpaper process never uses the network.
 - The AI feature sends your text, and any drawing you attach, to the agent CLI you chose, which sends it on as it normally does. Splash does not see an API key.
 
 Found a security problem? See [SECURITY.md](SECURITY.md).
@@ -265,7 +269,7 @@ The Xcode project is generated from `project.yml` and is not committed. If `xcod
 
 Splash follows [Semantic Versioning](https://semver.org/) and keeps a [Keep a Changelog](https://keepachangelog.com/) style [CHANGELOG](CHANGELOG.md). While it is in alpha, versions are `0.x.y-alpha`: `x` goes up for features, `y` for fixes.
 
-Pushing a tag like `v0.1.0-alpha` triggers the release workflow: it checks the tag against the version in `project.yml`, runs the tests, builds the app, packages a DMG and publishes a GitHub release (marked as pre-release when the tag has a suffix) using the changelog entry as notes. Releases are signed ad-hoc unless the `SIGNING_P12` and `SIGNING_P12_PASSWORD` secrets are set, which gives a fixed identity. This is not Apple's notarization: the first-launch warning remains. The website is deployed to GitHub Pages from the `site/` folder, with the live scenes built from the presets.
+Pushing a tag like `v0.1.0-alpha` triggers the release workflow: it checks the tag against the version in `project.yml`, runs the tests, builds the app, packages a DMG and publishes a GitHub release (marked as pre-release when the tag has a suffix) using the changelog entry as notes. Since 0.1.1 releases are signed with a fixed, self-signed certificate (stored as the `SIGNING_P12` and `SIGNING_P12_PASSWORD` secrets, created once with `scripts/setup-signing.sh`), so macOS recognises every update as the same app and keeps its permissions, and the in-app updater can check that an update comes from the same identity. This is not Apple's notarization: the first-launch warning remains. Without the secrets, for example in a fork, the build is signed ad-hoc and the in-app update refuses it. The 0.1.0-alpha release was signed ad-hoc, so updating from it to 0.1.1-alpha is done by hand (download the DMG). The website is deployed to GitHub Pages from the `site/` folder, with the live scenes built from the presets.
 
 ## Credits
 

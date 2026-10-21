@@ -4,6 +4,15 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.1-alpha] - 2026-10-21
+
+### Added
+- **Updates from inside the app.** When a new version is out, the library shows an Update button and Settings → About has **Update and restart**: it downloads the release from this repository, checks that it is signed with the same identity as the running app, replaces the app, opens it again and starts the wallpaper again if it was running. The editor asks GitHub once a day, while it is open (a single small request; switch it off in Settings → About). The wallpaper process never uses the network.
+- `scripts/setup-signing.sh`, which creates the fixed signing certificate once and stores it as repository secrets.
+
+### Changed
+- Releases are signed with a fixed, self-signed certificate instead of an ad-hoc signature, so macOS recognises every update as the same app and keeps its permissions. Updating from 0.1.0-alpha (ad-hoc) to this version is done by hand: download the DMG.
+
 ## [0.1.0-alpha] - 2026-10-21
 
 ### Added

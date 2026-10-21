@@ -53,7 +53,9 @@ enum Project {
 }
 
 struct AboutView: View {
-    @State private var check: UpdateCheck.State = .idle
+    private let updates = UpdateChecker.shared
+    private let installer = AppUpdater.shared
+    @State private var checkForUpdates = UpdateChecker.shared.isEnabled
 
     var body: some View {
         Form {
@@ -68,10 +70,29 @@ struct AboutView: View {
                 }
             }
 
-            Section("Updates") {
-                updateRow
-                Text("Splash only talks to GitHub when you press this. It never downloads or installs anything by itself.")
-                    .font(.caption).foregroundStyle(.secondary)
+            Section {
+                if let release = updates.available {
+                    LabeledContent("Update") {
+                        HStack {
+                            Link("Version \(release.version) is available", destination: release.url)
+                            Button(installer.status ?? "Update and restart") { installer.install(release) }
+                                .disabled(installer.isWorking)
+                        }
+                    }
+                    if let failure = installer.failure {
+                        Text(failure).font(.caption).foregroundStyle(.orange)
+                    }
+                } else if checkForUpdates {
+                    LabeledContent("Update", value: updates.couldNotCheck ? "Could not check" : (updates.lastChecked == nil ? "Not checked yet" : "You have the latest version"))
+                }
+                Toggle("Check for new versions", isOn: $checkForUpdates)
+                    .onChange(of: checkForUpdates) { _, value in updates.isEnabled = value }
+                Button(updates.isChecking ? "Checking…" : "Check now") { Task { await updates.check() } }
+                    .disabled(updates.isChecking)
+            } header: {
+                Text("Updates")
+            } footer: {
+                Text("Once a day, while Splash is open, it asks GitHub for the list of releases (a single small request) and tells you when there is a newer one. The wallpaper itself never uses the network. It never downloads or installs anything by itself: Update and restart does it when you press it, keeping your permissions.")
             }
 
             Section("Feedback") {
@@ -95,30 +116,6 @@ struct AboutView: View {
         .formStyle(.grouped)
     }
 
-    @ViewBuilder private var updateRow: some View {
-        switch check {
-        case .idle:
-            Button("Check for updates") { run() }
-        case .checking:
-            HStack { ProgressView().controlSize(.small); Text("Checking…") }
-        case .upToDate:
-            HStack { Label("You are up to date", systemImage: "checkmark.circle.fill").foregroundStyle(.green); Spacer(); Button("Check again") { run() } }
-        case .available(let tag, let url):
-            HStack {
-                Label("\(tag) is available", systemImage: "arrow.down.circle.fill")
-                Spacer()
-                Button("Download") { NSWorkspace.shared.open(url) }
-            }
-        case .failed(let message):
-            HStack { Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange); Spacer(); Button("Try again") { run() } }
-        }
-    }
-
-    private func run() {
-        check = .checking
-        Task { check = await UpdateCheck.run(current: Project.version) }
-    }
-
     private func link(_ title: String, _ url: String) -> some View {
         Button { if let url = URL(string: url) { NSWorkspace.shared.open(url) } } label: {
             HStack { Text(title); Spacer(); Image(systemName: "arrow.up.right").foregroundStyle(.secondary) }
@@ -128,40 +125,5 @@ struct AboutView: View {
 
     private func supportButton(_ title: String, _ url: String) -> some View {
         Button(title) { if let url = URL(string: url) { NSWorkspace.shared.open(url) } }
-    }
-}
-
-/// Asks GitHub for the list of releases, once, when the user asks. Nothing is downloaded.
-enum UpdateCheck {
-    enum State: Equatable {
-        case idle, checking, upToDate
-        case available(String, URL)
-        case failed(String)
-    }
-
-    static func run(current: String) async -> State {
-        guard let url = URL(string: "https://api.github.com/repos/Peppe37/Splash/releases?per_page=30") else { return .failed("Bad address") }
-        var request = URLRequest(url: url, timeoutInterval: 15)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return .failed("GitHub did not answer") }
-            let releases = try JSONDecoder().decode([Release].self, from: data)
-            // App releases are tagged v<version>; drafts are skipped.
-            guard let latest = releases.first(where: { !$0.draft && $0.tag_name.range(of: #"^v\d"#, options: .regularExpression) != nil }) else {
-                return .upToDate
-            }
-            let latestVersion = String(latest.tag_name.dropFirst())
-            guard VersionOrder.isNewer(latestVersion, than: current), let page = URL(string: latest.html_url) else { return .upToDate }
-            return .available(latest.tag_name, page)
-        } catch {
-            return .failed("Could not check")
-        }
-    }
-
-    struct Release: Decodable {
-        let tag_name: String
-        let html_url: String
-        let draft: Bool
     }
 }

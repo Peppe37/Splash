@@ -52,6 +52,13 @@ struct TopBar: View {
                 .tracking(-0.2)
                 .foregroundStyle(Theme.strong)
             Spacer()
+            if let release = UpdateChecker.shared.available {
+                Button { NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) } label: {
+                    Label("Update \(release.version)", systemImage: "arrow.down.circle")
+                }
+                .buttonStyle(.splash)
+                .help("A new version is available. Open Settings → About to install it.")
+            }
             Menu {
                 ForEach(Presets.all, id: \.id) { preset in
                     Button(preset.name) { model.create(from: preset) }

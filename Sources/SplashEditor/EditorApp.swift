@@ -7,6 +7,8 @@ final class EditorDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.regular)
         NSApplication.shared.activate(ignoringOtherApps: true)
+        // Looks for a newer version once a day, a short while after launch. Nothing is installed unless the user asks.
+        MainActor.assumeIsolated { UpdateChecker.shared.start() }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }

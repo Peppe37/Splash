@@ -24,5 +24,6 @@ let package = Package(
         // The window used to create and edit scenes. Closed once a scene is applied.
         .executableTarget(name: "SplashEditor", dependencies: ["SplashCore", "SplashPlatform"]),
         .testTarget(name: "SplashCoreTests", dependencies: ["SplashCore"]),
+        .testTarget(name: "SplashPlatformTests", dependencies: ["SplashPlatform"]),
     ]
 )
