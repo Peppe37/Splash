@@ -20,6 +20,8 @@ Usage:
                                              Render one seamless loop into an HEVC video
   splash ask <scene-folder> "<request>" [--agent claude|codex|opencode] [--model <name>] [--attach <file>]...
                                              Ask an AI agent CLI (your own login, no API key) to change the scene; saves a version first
+  splash desktop set <image>                 Set a picture as the wallpaper of every Space (saves your wallpaper settings first)
+  splash desktop restore                     Put your previous wallpaper settings back
   splash doctor                              Check this Mac's power and system state
   splash version
 
@@ -202,6 +204,28 @@ func runAsk(_ arguments: [String]) -> Never {
     exit(failed ? 1 : 0)
 }
 
+func runDesktop(_ arguments: [String]) -> Never {
+    let paths = AppPaths()
+    switch arguments.first {
+    case "set":
+        guard arguments.count >= 2 else { fail("Usage: splash desktop set <image>") }
+        let image = URL(fileURLWithPath: arguments[1])
+        guard FileManager.default.fileExists(atPath: image.path) else { fail("No such file: \(image.path)") }
+        runWithApplication {
+            switch try await DesktopImage.applyEverywhere(image, in: paths) {
+            case .spread(let spaces): print("Set on \(spaces) Spaces. Your previous settings are saved: splash desktop restore puts them back.")
+            case .unsupported: print("Set on the Space on screen only (macOS's settings file was not changed).")
+            }
+        }
+    case "restore":
+        runWithApplication {
+            if DesktopImage.restoreRemembered(in: paths) { print("Your previous wallpaper settings are back.") } else { print("Nothing saved to put back.") }
+        }
+    default:
+        fail("Usage: splash desktop set <image> | splash desktop restore")
+    }
+}
+
 func runDoctor() {
     let info = ProcessInfo.processInfo
     print("macOS: \(info.operatingSystemVersionString)")
@@ -224,6 +248,7 @@ case "presets": runPresets(Array(arguments.dropFirst()))
 case "snapshot": runSnapshot(Array(arguments.dropFirst()))
 case "bake": runBake(Array(arguments.dropFirst()))
 case "ask": runAsk(Array(arguments.dropFirst()))
+case "desktop": runDesktop(Array(arguments.dropFirst()))
 case "doctor": runDoctor()
 case "version", "--version": print(version)
 case nil, "help", "--help", "-h": print(usage)

@@ -13,6 +13,7 @@ This is a one-person, free project in pre-alpha, so please allow a few days for 
 - **Scene sandboxing.** Scene code is untrusted. Anything that lets a scene read files outside its folder, reach the network without `permissions.network`, keep data between runs, or run native code is a vulnerability.
 - **The agent bridge**: how the editor starts agent CLIs and passes them prompts, images and file paths, and anything that lets an agent change files outside the scene folder.
 - **Scene packages** (`.splashscene`): unpacking and installing, including path traversal and permission review.
+- **The wallpaper settings file.** To set a picture on every Space, Splash edits `~/Library/Application Support/com.apple.wallpaper/Store/Index.plist` and restarts the system's wallpaper agent. Anything that makes it change that file in ways other than copying the entry macOS wrote for the picture, or that skips the backup, is in scope. It can be switched off in Settings → Desktop.
 - The release workflows, the signing certificate and the in-app updater: it only downloads from this repository's releases, and refuses an update that is not signed with the same identity as the running app.
 
 ## Supported versions

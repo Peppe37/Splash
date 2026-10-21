@@ -48,6 +48,8 @@ final class AppModel {
     var applied: ActiveWallpaper?
     var chats: [String: ChatModel] = [:]
 
+    /// What happened to the other Spaces the last time a picture was set.
+    private(set) var stillOutcome: WallpaperStore.Outcome?
     private var saveTask: Task<Void, Never>?
     private var applyTask: Task<Void, Never>?
     private var lastLiveReload = Date.distantPast
@@ -243,7 +245,7 @@ final class AppModel {
                     self.applyState = .working("Preparing…", progress: nil)
                     let still = try await self.makeStill(of: scene, values: values)
                     try self.hand(over: ActiveWallpaper(sceneDirectory: scene.directory.path, tier: .live, stillPath: still.path))
-                    self.banner = Banner(text: "\(scene.manifest.name) is running live. You can close Splash.", isError: false)
+                    self.banner = Banner(text: "\(scene.manifest.name) is running live\(self.spacesNote). You can close Splash.", isError: false)
                 case .baked:
                     self.applyState = .working("Recording one loop…", progress: 0)
                     let output = self.paths.baked.appendingPathComponent("\(scene.manifest.id).mov")
@@ -254,14 +256,14 @@ final class AppModel {
                     }
                     let still = try await self.makeStill(of: scene, values: values)
                     try self.hand(over: ActiveWallpaper(sceneDirectory: scene.directory.path, tier: .baked, mediaPath: output.path, stillPath: still.path))
-                    self.banner = Banner(text: "\(scene.manifest.name) is playing as a video loop. You can close Splash.", isError: false)
+                    self.banner = Banner(text: "\(scene.manifest.name) is playing as a video loop\(self.spacesNote). You can close Splash.", isError: false)
                 case .static:
                     self.applyState = .working("Drawing the picture…", progress: nil)
                     let options = BakeOptions.forMainScreen()
                     _ = options
                     let file = try await self.makeStill(of: scene, values: values)
                     try self.hand(over: ActiveWallpaper(sceneDirectory: scene.directory.path, tier: .static, stillPath: file.path))
-                    self.banner = Banner(text: "\(scene.manifest.name) is now your wallpaper. Nothing keeps running.", isError: false)
+                    self.banner = Banner(text: "\(scene.manifest.name) is now your wallpaper\(self.spacesNote). Nothing keeps running.", isError: false)
                 }
             } catch is CancellationError {
                 self.banner = Banner(text: "Stopped.", isError: false)
@@ -287,13 +289,25 @@ final class AppModel {
         // A new file name each time, or macOS may keep showing the old picture.
         let file = paths.stills.appendingPathComponent("\(scene.manifest.id)-\(Int(Date().timeIntervalSince1970)).png")
         try OffscreenRenderer.writePNG(image, to: file)
-        try DesktopImage.apply(file)
+        let outcome = try await DesktopImage.applyEverywhere(file, in: paths)
+        stillOutcome = outcome
         // Older pictures of this scene are not needed any more.
         for old in (try? FileManager.default.contentsOfDirectory(at: paths.stills, includingPropertiesForKeys: nil)) ?? []
         where old != file && old.lastPathComponent.hasPrefix(scene.manifest.id + "-") {
             try? FileManager.default.removeItem(at: old)
         }
         return file
+    }
+
+    /// Says where the picture under the wallpaper was set: every Space, or only the one on screen.
+    private var spacesNote: String {
+        switch stillOutcome {
+        case .spread(let spaces)?: return " (the picture is set on all \(spaces) Spaces)"
+        case .unsupported?: return DesktopSettings.load().applyToAllSpaces
+            ? " (the picture is set on this Space only: macOS's wallpaper settings had a layout Splash does not know)"
+            : " (the picture is set on this Space only, as chosen in Settings → Desktop)"
+        case nil: return ""
+        }
     }
 
     /// Writes the state file and wakes the runner, which reads it. For a static wallpaper the runner quits: the picture is the real wallpaper.

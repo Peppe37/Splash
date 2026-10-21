@@ -1,5 +1,6 @@
 import AppKit
 import SplashCore
+import SplashPlatform
 import SwiftUI
 
 /// Settings: power choices for the wallpaper, and an About page with the version, links, a way to review and support the project.
@@ -8,6 +9,8 @@ struct SettingsView: View {
         TabView {
             PowerSettingsView()
                 .tabItem { Label("Power", systemImage: "bolt") }
+            DesktopSettingsView()
+                .tabItem { Label("Desktop", systemImage: "display") }
             AboutView()
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
@@ -36,6 +39,29 @@ struct PowerSettingsView: View {
             new.save()
             RunnerMessage.post(RunnerMessage.settings)
         }
+    }
+}
+
+/// How Splash sets the real macOS wallpaper.
+struct DesktopSettingsView: View {
+    @State private var settings = DesktopSettings.load()
+    private let paths = AppPaths()
+
+    var body: some View {
+        Form {
+            Section("Spaces") {
+                Toggle("Set the picture on every Space", isOn: $settings.applyToAllSpaces)
+                Text("macOS keeps a wallpaper for each Space, and an app can only set the one on screen. With this on, Splash copies the picture to all of them by editing macOS's wallpaper settings file (~/Library/Application Support/com.apple.wallpaper), after saving the original. Switch it off if you prefer Splash to leave that file alone: only the Space on screen is set then.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Your own wallpaper") {
+                Text(DesktopImage.hasRememberedWallpaper(in: paths) ? "Splash has saved your previous wallpaper settings and can put them back: Put back my previous wallpaper, in the … menu of a scene."
+                                                                      : "Nothing is saved yet. Splash saves your wallpaper settings before it changes them for the first time.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .onChange(of: settings) { _, new in new.save() }
     }
 }
 

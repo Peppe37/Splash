@@ -11,6 +11,19 @@ public enum DesktopImage {
         }
     }
 
+    /// Sets the picture on the current Space of every display, then, unless the user switched it off, on every other Space too.
+    /// Returns what happened to the other Spaces.
+    @MainActor
+    @discardableResult
+    public static func applyEverywhere(_ url: URL, in paths: AppPaths) async throws -> WallpaperStore.Outcome {
+        let everywhere = DesktopSettings.load().applyToAllSpaces
+        // The settings file is saved before the first change, so the user's own wallpapers can be put back.
+        if everywhere { WallpaperStore.backUpOnce(in: paths) }
+        try apply(url)
+        guard everywhere else { return .unsupported }
+        return await WallpaperStore.spreadToAllSpaces(imageURL: url, in: paths)
+    }
+
     @MainActor
     private static var options: [NSWorkspace.DesktopImageOptionKey: Any] {
         [.imageScaling: NSImageScaling.scaleProportionallyUpOrDown.rawValue, .allowClipping: true]
@@ -43,13 +56,18 @@ public enum DesktopImage {
     }
 
     public static func hasRememberedWallpaper(in paths: AppPaths) -> Bool {
-        FileManager.default.fileExists(atPath: paths.previousWallpaperFile.path)
+        FileManager.default.fileExists(atPath: paths.previousWallpaperFile.path) || WallpaperStore.hasBackup(in: paths)
     }
 
     /// Puts back what was remembered. A display with no saved picture gets the first one. Returns whether anything was restored.
     @MainActor
     @discardableResult
     public static func restoreRemembered(in paths: AppPaths) -> Bool {
+        // The saved settings file gives every Space back its own wallpaper.
+        if WallpaperStore.restoreBackup(in: paths) {
+            try? FileManager.default.removeItem(at: paths.previousWallpaperFile)
+            return true
+        }
         guard let data = try? Data(contentsOf: paths.previousWallpaperFile),
               let saved = try? JSONDecoder().decode([SavedWallpaper].self, from: data), let first = saved.first else { return false }
         var restored = false

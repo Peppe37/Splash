@@ -110,7 +110,8 @@ final class RunnerController: NSObject, NSApplicationDelegate {
     private func applyStill() {
         guard developmentScene == nil, let path = ActiveWallpaper.load(from: paths)?.stillPath,
               FileManager.default.fileExists(atPath: path) else { return }
-        try? DesktopImage.apply(URL(fileURLWithPath: path))
+        let url = URL(fileURLWithPath: path), paths = paths
+        Task { try? await DesktopImage.applyEverywhere(url, in: paths) }
     }
 
     private func tearDown() {

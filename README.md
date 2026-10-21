@@ -62,7 +62,7 @@ Splash is a free and open-source app that puts animated and procedural wallpaper
 - **Give it files**: attach images, SVG drawings, videos or 3D models with the paperclip, or drop them on the editor. Each one is either **in the scene** (copied to `assets/`, so a character or a logo can be part of the wallpaper) or **a reference** (the agent only looks at it). For a video the agent gets pictures taken from it.
 - **Versions**: one is saved before every AI change and every restore, so any change can be undone.
 - **The runner**: a menu bar item (pause, open Splash, start at login) that draws the wallpaper on every display. It pauses when covered, when the screen sleeps or locks, on Low Power Mode and when the Mac is hot, lowers its frame rate on battery, and shows a still picture while paused.
-- **A real wallpaper underneath**: a picture of the scene is set as the macOS wallpaper too, so Mission Control, Space changes and new displays match. The wallpaper you had is remembered and can be put back.
+- **A real wallpaper underneath**: a picture of the scene is set as the macOS wallpaper too, on every Space, so Mission Control, Space changes and new displays match. Your wallpaper settings are saved first and can be put back. See [the FAQ](#faq).
 - **Command line**: `splash` makes pictures and loops, checks a scene, and asks an agent from a terminal. See [Usage](#usage).
 - **Open scenes**: a scene is plain HTML, CSS and JavaScript in a folder you own. A linter checks it, for people and for agents.
 - **Updates in one click**: when a new version is out, one button downloads it, checks it and restarts the app, keeping your permissions and starting the wallpaper again.
@@ -167,7 +167,10 @@ Claude Code is tested. Codex is wired up but not tested yet. OpenCode is switche
 A still wallpaper costs nothing and a loop costs very little. A live scene pauses on Low Power Mode by default, lowers its frame rate on battery, and stops when covered, when the screen sleeps or locks, and when the Mac is hot. You can change these in **Settings → Power**.
 
 **Does it replace my current wallpaper?**
-While a scene is applied, Splash sets a picture of it as your wallpaper, so Mission Control and new displays match. It remembers the wallpaper you had, and **Put back my previous wallpaper** restores it. A dynamic or Aerial wallpaper can only be restored as a picture.
+While a scene is applied, Splash sets a picture of it as your wallpaper, on every Space and display, so Mission Control, the slide between Spaces and new displays match. It saves your wallpaper settings first, and **Put back my previous wallpaper** (the **…** menu of a scene) restores them, Space by Space.
+
+**Why does it edit a macOS settings file?**
+macOS keeps a wallpaper for each Space, and the only public way to set one (`NSWorkspace`) changes just the Space on screen. To set all of them, Splash lets macOS write the entry for the current Space, copies that entry to the other Spaces in `~/Library/Application Support/com.apple.wallpaper/Store/Index.plist`, and restarts the system's wallpaper agent. The file's format is not documented, so if the entry is not found or the layout is not what is expected, Splash changes nothing there and only the current Space is set. The original is saved to `~/Library/Application Support/Splash/wallpaper-store-backup.plist` before the first change. You can switch this off in **Settings → Desktop**, and `splash desktop restore` puts the original back.
 
 **Why is a moving wallpaper a window?**
 macOS has no public way to play an animation as the wallpaper itself, so Splash puts a window at the desktop level, under your icons and windows. To limit the side effects it also sets a still picture as the real wallpaper, and the runner stays out of the Dock and the app switcher. How well this behaves with Spaces, Stage Manager and virtual displays has not been tested enough: please [report](https://github.com/Peppe37/Splash/issues/new?template=bug_report.yml) what you see, with a screenshot.

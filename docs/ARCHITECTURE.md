@@ -97,7 +97,9 @@ A scene does not choose its own resolution. The host passes `splash.detail`: can
 
 ## The desktop
 
-macOS has no public way to animate the real wallpaper, so a moving scene is a window at the desktop level, under icons and windows. That has costs: Mission Control, sliding between Spaces and a just-connected display show the real wallpaper. So applying a live or baked scene also renders a still picture of it (`stillTime`, a quarter into the loop) and sets that as the real wallpaper on every display. The runner sets it again when displays change. The wallpaper the user had is remembered (once, in `previous-wallpaper.json`) and can be put back.
+macOS has no public way to animate the real wallpaper, so a moving scene is a window at the desktop level, under icons and windows. That has costs: Mission Control, sliding between Spaces and a just-connected display show the real wallpaper. So applying a live or baked scene also renders a still picture of it (`stillTime`, a quarter into the loop) and sets that as the real wallpaper on every display and every Space. The runner sets it again when displays change.
+
+**Every Space.** `NSWorkspace.setDesktopImageURL` only changes the Space on screen. `WallpaperStore` lets macOS write that entry, then copies it to every other Space, display and display default in `~/Library/Application Support/com.apple.wallpaper/Store/Index.plist`, and restarts the wallpaper agent (`launchctl kickstart`, or ending the agent when System Integrity Protection refuses that; launchd starts it again). The format is not documented, so the code copies what macOS wrote and never builds an entry itself; if that entry is not found it changes nothing. The copy is a pure function with tests. The original file is saved once (`wallpaper-store-backup.plist`) and put back by "Put back my previous wallpaper" and `splash desktop restore`. Settings → Desktop switches it off.
 
 ## Security
 
