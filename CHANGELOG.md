@@ -4,6 +4,11 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.2-alpha] - 2026-10-21
+
+### Fixed
+- The wallpaper runner inside the app is now signed with the project's certificate too. In 0.1.1-alpha it kept an ad-hoc signature, because the signing step did not reach the folder it lives in. The release build now fails if any piece of the app is ad-hoc signed.
+
 ## [0.1.1-alpha] - 2026-10-21
 
 ### Added

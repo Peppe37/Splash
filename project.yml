@@ -39,8 +39,8 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
-        MARKETING_VERSION: "0.1.1"
-        CURRENT_PROJECT_VERSION: "2"
+        MARKETING_VERSION: "0.1.2"
+        CURRENT_PROJECT_VERSION: "3"
         CODE_SIGN_IDENTITY: "-"
   # The light process that draws the wallpaper. No Dock icon: it lives in the menu bar.
   SplashRunner:
@@ -59,8 +59,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.giuseppe.splash.runner
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
-        MARKETING_VERSION: "0.1.1"
-        CURRENT_PROJECT_VERSION: "2"
+        MARKETING_VERSION: "0.1.2"
+        CURRENT_PROJECT_VERSION: "3"
         CODE_SIGN_IDENTITY: "-"
   splash:
     type: tool

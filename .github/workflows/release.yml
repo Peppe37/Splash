@@ -65,14 +65,22 @@ jobs:
             security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
             security find-certificate -c "Splash Self-Signed" -p "$KC" > "$RUNNER_TEMP/cert.pem"
             sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/cert.pem"
+            # The runner app lives in Resources, which --deep does not reach: sign it first, then the app that contains it
+            codesign --force --sign "Splash Self-Signed" --keychain "$KC" "$APP/Contents/Resources/Splash Runner.app"
             codesign --force --deep --sign "Splash Self-Signed" --keychain "$KC" "$APP"
             rm -f "$RUNNER_TEMP/id.p12"
+            # Every piece must carry the project's identity, or the in-app updater and the permissions would not follow it
+            for PIECE in "$APP" "$APP/Contents/Resources/Splash Runner.app" "$APP/Contents/MacOS/splash-cli"; do
+              if codesign -dv "$PIECE" 2>&1 | grep -q "Signature=adhoc"; then echo "::error::$PIECE is signed ad-hoc"; exit 1; fi
+            done
           else
-            echo "::warning::No signing secrets: using an ad-hoc signature (macOS will ask for permissions again after each update)"
+            echo "::warning::No signing secrets: using an ad-hoc signature (macOS will ask for permissions again after each update, and the in-app update will refuse it)"
+            codesign --force --sign - "$APP/Contents/Resources/Splash Runner.app"
             codesign --force --deep --sign - "$APP"
           fi
           codesign --verify --deep --strict "$APP"
           codesign -dr - "$APP"
+          codesign -dr - "$APP/Contents/Resources/Splash Runner.app"
 
       - name: Create DMG
         env:
