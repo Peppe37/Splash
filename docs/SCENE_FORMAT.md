@@ -71,7 +71,11 @@ To bake a seamless loop: drive everything from `splash.time`, use whole numbers 
 
 `requestAnimationFrame` is replaced by a version capped at `splash.fps` that stops while paused. Do not use `setInterval` for animation.
 
+## Files in a scene
+
+A scene can bring files: put them in `assets/` and load them with relative paths (`assets/fox.svg`). SVG and PNG with a transparent background suit characters and logos. A `<video autoplay muted loop playsinline>` plays by itself, as long as it is muted; a scene with a video can only be `live`, because the baker cannot step a video frame by frame. `.splash/references/` is not part of the scene: it holds files that were only shown to an agent.
+
 ## Rules `splash lint` checks
 
 Errors: wrong `schemaVersion`; bad `id`; empty `name`; missing or escaping `entry`; empty `tiers`; `baked` without `loopSeconds`; `fps` outside 1 to 60; `audio` with a tier other than `live`; duplicate param keys; bad param defaults or ranges; remote URLs in code when `permissions.network` is false.
-Warnings: `fps` above 30.
+Warnings: `fps` above 30; a `<video>` in a scene that offers the loop or still tier; an `assets/` folder over 100 MB. Addresses inside an SVG (`xmlns="http://www.w3.org/…"`) are not counted as network use.

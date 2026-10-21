@@ -18,7 +18,7 @@ Usage:
                                              Draw the scene at a moment and save a picture (agents use this to see their work)
   splash bake <scene-folder> <out.mov> [--width <px>] [--height <px>] [--fps <n>]
                                              Render one seamless loop into an HEVC video
-  splash ask <scene-folder> "<request>" [--agent claude|codex|opencode]
+  splash ask <scene-folder> "<request>" [--agent claude|codex|opencode] [--model <name>] [--attach <file>]...
                                              Ask an AI agent CLI (your own login, no API key) to change the scene; saves a version first
   splash doctor                              Check this Mac's power and system state
   splash version
@@ -156,8 +156,28 @@ func runAsk(_ arguments: [String]) -> Never {
         fail("No agent CLI found. Install Claude Code, Codex or OpenCode and sign in.")
     }
     do { try SceneHistory(scene: scene).snapshot(label: String(arguments[1].prefix(60))) } catch { fail("Could not save a version: \(error)") }
-    let request = AgentRequest(text: arguments[1], splashCLI: RunnerControl.cliExecutable()?.path)
-    let session = AgentSession(kind: kind, executable: executable, request: request, sceneDirectory: scene.directory)
+    var request = AgentRequest(text: arguments[1], splashCLI: RunnerControl.cliExecutable()?.path)
+    // --attach <file> puts a file in the scene's assets to be used; --reference <file> only lets the agent look at it.
+    for (flag, role) in [("--attach", AttachedFile.Role.use), ("--reference", AttachedFile.Role.reference)] {
+        for index in arguments.indices where arguments[index] == flag && arguments.indices.contains(index + 1) {
+            do {
+                let semaphore = DispatchSemaphore(value: 0)
+                var imported: AttachedFile?
+                var failure: Error?
+                Task {
+                    do { imported = try await AttachmentImporter.importFile(URL(fileURLWithPath: arguments[index + 1]), role: role, into: scene) } catch { failure = error }
+                    semaphore.signal()
+                }
+                semaphore.wait()
+                if let failure { throw failure }
+                if let imported { request.attachments.append(imported) }
+            } catch {
+                fail("Could not attach \(arguments[index + 1]): \(error.localizedDescription)")
+            }
+        }
+    }
+    let session = AgentSession(kind: kind, executable: executable, request: request, sceneDirectory: scene.directory,
+                               model: option("--model", in: arguments))
     print("Asking \(kind.displayName)…")
     session.start()
     let done = DispatchSemaphore(value: 0)

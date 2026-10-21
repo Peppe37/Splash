@@ -16,6 +16,43 @@ public enum AgentKind: String, CaseIterable, Identifiable, Sendable {
 
     public var executableName: String { rawValue }
 
+    /// The company whose models the agent uses, so the user always sees who is going to read the prompt.
+    public var provider: String {
+        switch self {
+        case .claude: return "Anthropic"
+        case .codex: return "OpenAI"
+        case .opencode: return "chosen in OpenCode"
+        }
+    }
+
+    public struct ModelOption: Equatable, Hashable, Sendable {
+        public let label: String
+        /// What is passed to the agent as the model. Nil means: the agent's own choice.
+        public let value: String?
+    }
+
+    /// Models worth offering in a menu. Anything else can be typed in. Model names change often, so the list stays short:
+    /// aliases the agent resolves to its latest model, and "the agent's own default".
+    public var modelOptions: [ModelOption] {
+        switch self {
+        case .claude:
+            return [ModelOption(label: "Default", value: nil), ModelOption(label: "Fable", value: "fable"),
+                    ModelOption(label: "Opus", value: "opus"), ModelOption(label: "Sonnet", value: "sonnet"),
+                    ModelOption(label: "Haiku", value: "haiku")]
+        case .codex, .opencode:
+            return [ModelOption(label: "Default", value: nil)]
+        }
+    }
+
+    /// The hint for the box where a model name can be typed.
+    public var modelHint: String {
+        switch self {
+        case .claude: return "a model name, such as claude-sonnet-5-5"
+        case .codex: return "a model name"
+        case .opencode: return "provider/model, such as anthropic/claude-sonnet-5-5"
+        }
+    }
+
     /// OpenCode is switched off: in testing its `run` command edited a folder outside the scene (it works in its own
     /// project directory, and the command has no option to set one). Set SPLASH_ENABLE_OPENCODE=1 to try it anyway.
     public var isEnabled: Bool {
@@ -27,26 +64,35 @@ public enum AgentKind: String, CaseIterable, Identifiable, Sendable {
 
     /// Arguments for one non-interactive turn. The working directory is the scene folder.
     /// Claude Code is checked against its current `--help`; Codex is not installed on the development machine, so its flags are unverified.
-    public func arguments(prompt: String, imagePath: String?, splashCLI: String?) -> [String] {
+    public func arguments(prompt: String, imagePaths: [String], splashCLI: String?, model: String? = nil) -> [String] {
+        let model = model?.trimmingCharacters(in: .whitespaces).nilIfEmpty
         switch self {
         case .claude:
             var tools = "Read,Edit,Write,Glob,Grep"
             if let splashCLI { tools += ",Bash(\(splashCLI):*)" }
-            return ["-p", prompt, "--output-format", "stream-json", "--verbose",
-                    "--permission-mode", "acceptEdits", "--allowedTools", tools]
+            var arguments = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits"]
+            if let model { arguments += ["--model", model] }
+            // --allowedTools takes a list, so it goes last.
+            return arguments + ["--allowedTools", tools]
         case .codex:
             var arguments = ["exec", "--sandbox", "workspace-write", "--skip-git-repo-check"]
-            if let imagePath { arguments += ["--image", imagePath] }
+            if let model { arguments += ["--model", model] }
+            for path in imagePaths { arguments += ["--image", path] }
             return arguments + [prompt]
         case .opencode:
             // --standalone: without it OpenCode talks to a background service that works in its own folder, not in the scene's.
             var arguments = ["run", prompt, "--auto", "--standalone"]
-            if let imagePath { arguments += ["--file", imagePath] }
+            if let model { arguments += ["--model", model] }
+            for path in imagePaths { arguments += ["--file", path] }
             return arguments
         }
     }
 
     var emitsStreamJSON: Bool { self == .claude }
+}
+
+extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }
 
 public enum AgentEvent: Equatable, Sendable {
@@ -144,7 +190,7 @@ public final class AgentSession: @unchecked Sendable {
     private var sawResult = false
     private var cancelled = false
 
-    public init(kind: AgentKind, executable: URL, request: AgentRequest, sceneDirectory: URL) {
+    public init(kind: AgentKind, executable: URL, request: AgentRequest, sceneDirectory: URL, model: String? = nil) {
         self.kind = kind
         var continuation: AsyncStream<AgentEvent>.Continuation!
         events = AsyncStream { continuation = $0 }
@@ -153,7 +199,8 @@ public final class AgentSession: @unchecked Sendable {
         process.executableURL = executable
         process.currentDirectoryURL = sceneDirectory
         process.arguments = kind.arguments(prompt: request.prompt(sceneDirectory: sceneDirectory),
-                                           imagePath: request.annotatedImage?.path, splashCLI: request.splashCLI)
+                                           imagePaths: request.imagePaths(sceneDirectory: sceneDirectory),
+                                           splashCLI: request.splashCLI, model: model)
         var environment = ProcessInfo.processInfo.environment
         environment["PATH"] = AgentLocator.environmentPATH
         process.environment = environment

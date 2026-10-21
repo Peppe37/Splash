@@ -25,6 +25,12 @@ The flags of each tool change often. Check them against the tool's current `--he
 
 The same engine is available from the terminal: `splash ask <scene> "<request>" [--agent claude]`.
 
+## Models and files
+
+- **Which agent, which model.** The prompt shows the agent and the company whose models it uses, and a model menu. For Claude Code the choices are the agent's default and the aliases `fable`, `opus`, `sonnet`, `haiku` (passed as `--model`); any other name can be typed. Codex and OpenCode take a typed name (`--model`); OpenCode names look like `provider/model`. Nothing is sent anywhere except by the agent itself, as when you use it in a terminal.
+- **Files.** `AttachmentImporter` copies each file into the scene folder: to `assets/` if it is for the scene, to `.splash/references/` if it is a reference. Names are made safe and never overwrite. Files over 300 MB are refused. For a video, six evenly spaced pictures are saved in `.splash/references/` and handed to the agent as images, because it cannot play a video. Images and frames are passed with the agent's own flag where it has one (`--image` for Codex, `--file` for OpenCode); Claude Code reads them by path.
+- In the prompt, files for the scene are listed separately from references, and the agent is told to load a file itself (an `<img>`, or an image drawn on the canvas) and not to redraw it by hand. A scene that uses a `<video>` can only be live.
+
 ## What the agent knows
 
 Every scene folder has an `AGENTS.md` (and a `CLAUDE.md` that imports it) with the rules and the SDK. The repository also ships a skill in [`skills/splash/`](../skills/splash/SKILL.md), following the approach of [HyperFrames](https://github.com/heygen-com/hyperframes): a skill that tells an agent how to make a scene. It is not packaged for installation into the agents yet. The agent can check its own work with `splash lint` and `splash snapshot`.

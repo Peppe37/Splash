@@ -17,6 +17,14 @@ This folder is one animated wallpaper. Edit the files here, then check your work
 6. Keep the scene readable. Someone will edit it by hand later.
 7. Only read and change files inside this folder.
 
+## Files the user gives you
+
+- Files in `assets/` are for the scene: load the file itself with a relative path (`assets/hero.svg`), in an `<img>` or drawn on the canvas. Do not redraw its shapes by hand. Keep it where it is.
+- Files in `.splash/references/` are only for you to look at. Never use them in the scene.
+- For characters, logos and props prefer SVG, or PNG with a transparent background. Keep files small.
+- A video can play as a layer: `<video autoplay muted loop playsinline src="assets/clip.mp4">`. It must be muted. A scene with a video can only be `live`: set `tiers` to `["live"]`, because a video cannot be recorded frame by frame.
+- You cannot play a video, but pictures taken from it are in `.splash/references/`. Look at those.
+
 ## The `splash` object
 
 - `splash.params`: current parameter values.

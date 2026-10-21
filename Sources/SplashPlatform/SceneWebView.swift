@@ -50,7 +50,8 @@ public final class SceneWebView: WKWebView {
 
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = controller
-        configuration.mediaTypesRequiringUserActionForPlayback = .all
+        // A muted video may play by itself (a character that moves, a looping clip); anything with sound may not.
+        configuration.mediaTypesRequiringUserActionForPlayback = .audio
         // A fresh store each time: a wallpaper must not keep cookies or caches around.
         configuration.websiteDataStore = .nonPersistent()
 

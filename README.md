@@ -58,7 +58,8 @@ Splash is a free and open-source app that puts animated and procedural wallpaper
 - **Library**: your scenes and the presets as cards with a real picture of the scene, drawn by the same code that draws the wallpaper.
 - **Large preview and controls**: colours, speed and so on, built from the scene's own list, following your hand live.
 - **Still, Loop or Live**: pick how to put the scene on the desktop. A still is set as the real wallpaper. A loop is recorded once, in full resolution and without a jump, and played by the system. A live scene is drawn in real time, for scenes that react to something.
-- **AI chat**: the prompt under the preview talks to an agent CLI. Drawings and numbered pin comments on the preview are sent with the request, and the agent changes only what you pointed at.
+- **AI chat**: the prompt under the preview talks to an agent CLI, and always shows which agent and whose models are used (for example Claude Code, Anthropic) and lets you pick the model. Drawings and numbered pin comments on the preview are sent with the request, and the agent changes only what you pointed at.
+- **Give it files**: attach images, SVG drawings, videos or 3D models with the paperclip, or drop them on the editor. Each one is either **in the scene** (copied to `assets/`, so a character or a logo can be part of the wallpaper) or **a reference** (the agent only looks at it). For a video the agent gets pictures taken from it.
 - **Versions**: one is saved before every AI change and every restore, so any change can be undone.
 - **The runner**: a menu bar item (pause, open Splash, start at login) that draws the wallpaper on every display. It pauses when covered, when the screen sleeps or locks, on Low Power Mode and when the Mac is hot, lowers its frame rate on battery, and shows a still picture while paused.
 - **A real wallpaper underneath**: a picture of the scene is set as the macOS wallpaper too, so Mission Control, Space changes and new displays match. The wallpaper you had is remembered and can be put back.
@@ -117,7 +118,7 @@ Splash did not ask for any system permission in testing. Setting the desktop pic
 ## Usage
 
 - **Pick a scene** in the library (or a preset, which makes a copy), change the controls, choose **Still**, **Loop** or **Live** next to **Apply**, and press **Apply** (⌘↩). You can close the window: the wallpaper keeps going in the menu bar.
-- **Describe a change** in the prompt under the preview. To point at something, press the pencil on the preview, **Draw** or **Comment**, and send. **Versions** (in the inspector) undoes any change.
+- **Describe a change** in the prompt under the preview. Pick the agent and the model under it. The paperclip (or a drop) gives it files: images and SVGs to use in the scene, or anything as a reference. To point at something, press the pencil on the preview, **Draw** or **Comment**, and send. **Versions** (in the inspector) undoes any change.
 - **The menu bar drop** pauses the wallpaper, opens Splash again, and switches start at login.
 - **To put your old wallpaper back**: the **…** menu → **Put back my previous wallpaper**.
 - **Settings** (<kbd>⌘</kbd><kbd>,</kbd>) has the power choices and the About page.
@@ -130,7 +131,7 @@ splash init my-scene --preset aurora
 splash lint my-scene
 splash snapshot my-scene out.png --time 5        # a picture of the scene
 splash bake my-scene out.mov                     # one seamless HEVC loop
-splash ask my-scene "make it slower and warmer"  # needs an agent CLI
+splash ask my-scene "make it slower and warmer"  # needs an agent CLI; add --model sonnet, --attach fox.svg, --reference mood.png
 splash-runner my-scene                           # show it live on the desktop (Ctrl+C to stop)
 ```
 

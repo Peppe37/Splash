@@ -283,7 +283,7 @@ struct AgentTests {
     }
 
     @Test func claudeArgumentsAreNonInteractive() {
-        let arguments = AgentKind.claude.arguments(prompt: "hi", imagePath: nil, splashCLI: "/x/splash")
+        let arguments = AgentKind.claude.arguments(prompt: "hi", imagePaths: [], splashCLI: "/x/splash")
         #expect(arguments.first == "-p")
         #expect(arguments.contains("acceptEdits"))
         #expect(arguments.last?.contains("Bash(/x/splash:*)") == true)
@@ -387,5 +387,110 @@ struct VersionOrderTests {
     @Test func aDevelopmentBuildIsOlderThanAnyRelease() {
         #expect(VersionOrder.isNewer("0.1.0-alpha", than: "dev"))
         #expect(!VersionOrder.isNewer("nonsense", than: "0.1.0-alpha"))
+    }
+}
+
+@Suite("Models and attachments")
+struct ModelAndAttachmentTests {
+    @Test func theModelIsPassedToEachAgent() {
+        let claude = AgentKind.claude.arguments(prompt: "hi", imagePaths: [], splashCLI: "/x/splash", model: "sonnet")
+        #expect(claude.contains("--model"))
+        #expect(claude[claude.firstIndex(of: "--model")! + 1] == "sonnet")
+        // The tool list takes several values, so it has to stay last.
+        #expect(claude.firstIndex(of: "--model")! < claude.firstIndex(of: "--allowedTools")!)
+        #expect(AgentKind.codex.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, model: "gpt-x").contains("gpt-x"))
+        #expect(AgentKind.opencode.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, model: "anthropic/x").contains("anthropic/x"))
+    }
+
+    @Test func noModelMeansTheAgentsOwnChoice() {
+        for kind in AgentKind.allCases {
+            #expect(!kind.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, model: nil).contains("--model"))
+            #expect(!kind.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, model: "  ").contains("--model"))
+        }
+    }
+
+    @Test func everyAgentSaysWhoseModelsItUses() {
+        #expect(AgentKind.claude.provider == "Anthropic")
+        #expect(AgentKind.codex.provider == "OpenAI")
+        #expect(AgentKind.claude.modelOptions.first?.value == nil)   // the first choice is the agent's own default
+        #expect(AgentKind.claude.modelOptions.contains { $0.value == "sonnet" })
+    }
+
+    @Test func imagesAndVideoFramesAreHandedToTheAgent() {
+        let request = AgentRequest(text: "x", attachments: [
+            AttachedFile(path: "assets/hero.png", role: .use, kind: .image),
+            AttachedFile(path: "assets/logo.svg", role: .use, kind: .svg),
+            AttachedFile(path: ".splash/references/clip.mp4", role: .reference, kind: .video,
+                         frames: [".splash/references/clip-frame-1.png", ".splash/references/clip-frame-2.png"]),
+        ])
+        let paths = request.imagePaths(sceneDirectory: URL(fileURLWithPath: "/scene"))
+        #expect(paths == ["/scene/assets/hero.png", "/scene/.splash/references/clip-frame-1.png", "/scene/.splash/references/clip-frame-2.png"])
+        for kind in [AgentKind.codex, .opencode] {
+            let arguments = kind.arguments(prompt: "hi", imagePaths: paths, splashCLI: nil)
+            #expect(paths.allSatisfy { arguments.contains($0) })
+        }
+    }
+
+    @Test func thePromptSeparatesWhatToUseFromWhatToLookAt() {
+        let request = AgentRequest(text: "add the fox", attachments: [
+            AttachedFile(path: "assets/fox.svg", role: .use, kind: .svg),
+            AttachedFile(path: ".splash/references/mood.png", role: .reference, kind: .image),
+            AttachedFile(path: ".splash/references/run.mp4", role: .reference, kind: .video, frames: [".splash/references/run-frame-1.png"]),
+        ])
+        let prompt = request.prompt(sceneDirectory: URL(fileURLWithPath: "/scene"))
+        let useIndex = prompt.range(of: "files to use in the scene")!.lowerBound
+        let referenceIndex = prompt.range(of: "files as references")!.lowerBound
+        #expect(useIndex < referenceIndex)
+        #expect(prompt.contains("- assets/fox.svg: an SVG drawing"))
+        #expect(prompt.contains("- .splash/references/mood.png: an image"))
+        #expect(prompt.contains("run-frame-1.png"))
+        #expect(prompt.contains("cannot play it"))
+    }
+
+    @Test func fileKindsAreRecognised() {
+        #expect(AttachedFile.Kind.detect(extension: "PNG") == .image)
+        #expect(AttachedFile.Kind.detect(extension: "svg") == .svg)
+        #expect(AttachedFile.Kind.detect(extension: "mov") == .video)
+        #expect(AttachedFile.Kind.detect(extension: "glb") == .model)
+        #expect(AttachedFile.Kind.detect(extension: "pdf") == .other)
+    }
+
+    @Test func aVideoInAScenethatIsRecordedGetsAWarning() throws {
+        var manifest = SceneTemplates.manifest(id: "a", name: "a")
+        manifest.tiers = [.baked, .live]
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("splash-video-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Scene.write(manifest, to: directory)
+        try "<video autoplay muted loop src=\"assets/x.mp4\"></video>".write(to: directory.appendingPathComponent("index.html"), atomically: true, encoding: .utf8)
+        let issues = SceneLinter.lint(try Scene.load(from: directory))
+        #expect(issues.contains { $0.code == "video-tier" && $0.severity == .warning })
+
+        manifest.tiers = [.live]
+        try Scene.write(manifest, to: directory)
+        #expect(!SceneLinter.lint(try Scene.load(from: directory)).contains { $0.code == "video-tier" })
+    }
+}
+
+@Suite("Linter and namespaces")
+struct LinterNamespaceTests {
+    private func codes(forAsset svg: String, network: Bool = false) throws -> [String] {
+        var manifest = SceneTemplates.manifest(id: "a", name: "a")
+        manifest.permissions.network = network
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("splash-ns-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Scene.write(manifest, to: directory)
+        try "<html></html>".write(to: directory.appendingPathComponent("index.html"), atomically: true, encoding: .utf8)
+        try FileManager.default.createDirectory(at: directory.appendingPathComponent("assets"), withIntermediateDirectories: true)
+        try svg.write(to: directory.appendingPathComponent("assets/x.svg"), atomically: true, encoding: .utf8)
+        return SceneLinter.lint(try Scene.load(from: directory)).map(\.code)
+    }
+
+    @Test func anSvgNamespaceIsNotANetworkAddress() throws {
+        #expect(!(try codes(forAsset: #"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"/>"#)).contains("network"))
+        #expect(!(try codes(forAsset: #"<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">"#)).contains("network"))
+    }
+
+    @Test func aRealRemoteAddressStillFails() throws {
+        #expect(try codes(forAsset: #"<svg xmlns="http://www.w3.org/2000/svg"><image href="https://example.com/x.png"/></svg>"#).contains("network"))
     }
 }

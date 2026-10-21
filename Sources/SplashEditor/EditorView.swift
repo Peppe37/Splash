@@ -2,6 +2,7 @@ import AppKit
 import SplashCore
 import SplashPlatform
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// One scene: a large preview with an AI prompt under it, and an inspector on the right.
 struct EditorView: View {
@@ -21,6 +22,7 @@ struct EditorView: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.never)
+            .modifier(FileDropModifier(chat: model.chat(for: scene)))
             Hairline(vertical: true)
             Inspector(scene: scene)
                 .frame(width: 320)
@@ -258,6 +260,9 @@ struct MessageRow: View {
                     .font(.system(size: 13))
                     .padding(.horizontal, 10).padding(.vertical, 7)
                     .background(Theme.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                ForEach(message.attachments, id: \.self) { name in
+                    Label(name, systemImage: "paperclip").font(.system(size: 11)).foregroundStyle(Theme.muted)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         case .agent:
@@ -274,17 +279,27 @@ struct MessageRow: View {
     }
 }
 
-/// The prompt: describe a change in words, with an optional drawing.
+/// The prompt: describe a change in words, with files and an optional drawing. It always says which agent, and which model,
+/// is going to read it.
 struct Composer: View {
     @Environment(AppModel.self) private var model
     @Bindable var chat: ChatModel
     @State private var draft = ""
     @State private var includeDrawing = true
+    @State private var askingForModel = false
+    @State private var customModel = ""
     @FocusState private var focused: Bool
 
     var body: some View {
         let agents = chat.installedAgents
         VStack(alignment: .leading, spacing: 10) {
+            if !chat.attachments.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(chat.attachments) { AttachmentChip(chat: chat, item: $0) }
+                    }
+                }
+            }
             if !model.annotations.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "scribble").foregroundStyle(Theme.muted)
@@ -305,16 +320,16 @@ struct Composer: View {
                 .onSubmit(send)
 
             HStack(spacing: 8) {
+                Button(action: chooseFiles) { Image(systemName: "paperclip") }
+                    .buttonStyle(IconButtonStyle())
+                    .help("Attach images, SVGs, videos or other files: to use in the scene, or as a reference. You can also drop them here.")
+                    .disabled(chat.isRunning || agents.isEmpty)
+
                 if agents.isEmpty {
                     Badge(text: "No agent found", tint: Theme.red)
                 } else {
-                    Menu {
-                        ForEach(agents) { agent in Button(agent.displayName) { chat.agent = agent } }
-                    } label: {
-                        Text(chat.agent.displayName).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.muted)
-                    }
-                    .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
-                    Text("your own login, no API key").font(.system(size: 12)).foregroundStyle(Theme.muted.opacity(0.7))
+                    agentMenu(agents)
+                    modelMenu
                 }
                 Spacer()
                 if chat.isRunning {
@@ -328,14 +343,140 @@ struct Composer: View {
                         .help("Send")
                 }
             }
+            if !agents.isEmpty {
+                Text("Runs \(chat.agent.displayName) with your own login: \(chat.agent.provider == "chosen in OpenCode" ? "the provider is the one you set in OpenCode" : "your prompt, attached files and drawing go to \(chat.agent.provider)"). No API key in Splash.")
+                    .font(.system(size: 11)).foregroundStyle(Theme.muted.opacity(0.8))
+            }
         }
         .padding(14)
         .panel(radius: Theme.Radius.panel)
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(focused ? Theme.borderStrong : .clear))
+        .alert("Model name", isPresented: $askingForModel) {
+            TextField(chat.agent.modelHint, text: $customModel)
+            Button("Use it") { chat.setModel(customModel.trimmingCharacters(in: .whitespaces)) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("The name is passed to \(chat.agent.displayName) as it is. Leave it empty for the agent's own default.")
+        }
+    }
+
+    /// Which agent, and whose models it uses.
+    private func agentMenu(_ agents: [AgentKind]) -> some View {
+        Menu {
+            ForEach(agents) { agent in
+                Button { chat.agent = agent } label: {
+                    Label("\(agent.displayName) · \(agent.provider)", systemImage: agent == chat.agent ? "checkmark" : "")
+                }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Text(chat.agent.displayName).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.text)
+                Text(chat.agent.provider).font(.system(size: 12)).foregroundStyle(Theme.muted)
+            }
+        }
+        .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
+        .help("The agent that makes the changes")
+    }
+
+    private var modelMenu: some View {
+        Menu {
+            ForEach(chat.agent.modelOptions, id: \.self) { option in
+                Button { chat.setModel(option.value ?? "") } label: {
+                    Label(option.value == nil ? "Default (the agent's own choice)" : option.label,
+                          systemImage: (option.value ?? "") == chat.model ? "checkmark" : "")
+                }
+            }
+            Divider()
+            Button("Other model…") { customModel = chat.model; askingForModel = true }
+        } label: {
+            HStack(spacing: 5) {
+                Text("Model").font(.system(size: 12)).foregroundStyle(Theme.muted)
+                Text(chat.modelLabel).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.text)
+            }
+        }
+        .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
+        .help("The model the agent uses for this request")
+    }
+
+    private func chooseFiles() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.message = "Choose images, SVGs, videos or other files to give to the AI."
+        if panel.runModal() == .OK { chat.attach(panel.urls) }
     }
 
     private func send() {
         chat.send(draft, includeAnnotations: includeDrawing)
         draft = ""
+    }
+}
+
+/// A file waiting to be sent, with the choice of what it is for.
+struct AttachmentChip: View {
+    @Bindable var chat: ChatModel
+    let item: PendingAttachment
+
+    var body: some View {
+        HStack(spacing: 8) {
+            thumbnail
+            Text(item.url.lastPathComponent).font(.system(size: 12)).lineLimit(1).frame(maxWidth: 150, alignment: .leading)
+            Menu {
+                Button { chat.setRole(.use, for: item.id) } label: {
+                    Label("Use in the scene", systemImage: item.role == .use ? "checkmark" : "")
+                }
+                Button { chat.setRole(.reference, for: item.id) } label: {
+                    Label("Only as a reference", systemImage: item.role == .reference ? "checkmark" : "")
+                }
+            } label: {
+                Text(item.role == .use ? "In the scene" : "Reference")
+                    .font(.system(size: 11, weight: .medium)).foregroundStyle(item.role == .use ? Theme.green : Theme.blue)
+            }
+            .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+            .help(item.kind == .video ? "A video in the scene can only be live. As a reference, the agent looks at pictures taken from it."
+                                      : "In the scene: the agent can use the file. Reference: the agent only looks at it.")
+            Button { chat.removeAttachment(item.id) } label: { Image(systemName: "xmark").font(.system(size: 9, weight: .bold)) }
+                .buttonStyle(.plain).foregroundStyle(Theme.muted)
+        }
+        .padding(.horizontal, 8).padding(.vertical, 5)
+        .panel(radius: Theme.Radius.control, fill: Theme.surfaceRaised)
+    }
+
+    @ViewBuilder private var thumbnail: some View {
+        if item.kind == .image || item.kind == .svg, let image = NSImage(contentsOf: item.url) {
+            Image(nsImage: image).resizable().scaledToFill().frame(width: 22, height: 22).clipShape(RoundedRectangle(cornerRadius: 4))
+        } else {
+            Image(systemName: item.kind == .video ? "film" : item.kind == .model ? "cube" : "doc")
+                .frame(width: 22, height: 22).foregroundStyle(Theme.muted)
+        }
+    }
+}
+
+/// Lets files be dropped on a view and handed to the chat.
+struct FileDropModifier: ViewModifier {
+    let chat: ChatModel
+    @State private var targeted = false
+
+    func body(content: Content) -> some View {
+        content
+            .onDrop(of: [UTType.fileURL], isTargeted: $targeted) { providers in
+                var accepted = false
+                for provider in providers where provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                    accepted = true
+                    provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                        guard let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                        Task { @MainActor in chat.attach([url]) }
+                    }
+                }
+                return accepted
+            }
+            .overlay {
+                if targeted {
+                    RoundedRectangle(cornerRadius: Theme.Radius.panel).stroke(Theme.blue, style: StrokeStyle(lineWidth: 2, dash: [6]))
+                        .background(Theme.blue.opacity(0.06))
+                        .overlay(Label("Drop to give it to the AI", systemImage: "paperclip").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.blue))
+                        .allowsHitTesting(false)
+                }
+            }
     }
 }

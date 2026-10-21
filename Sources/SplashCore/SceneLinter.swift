@@ -57,8 +57,28 @@ public enum SceneLinter {
             issues.append(.init(.error, "audio-tier", "a scene that reacts to audio can only be live: set tiers to [\"live\"]."))
         }
 
+        issues += lintAssets(scene)
         issues += lintParams(manifest.params)
         issues += lintSources(scene)
+        return issues
+    }
+
+    /// Files the scene brings with it. A video moves by itself, so a scene made of one cannot be recorded frame by frame.
+    static func lintAssets(_ scene: Scene) -> [LintIssue] {
+        var issues: [LintIssue] = []
+        let manifest = scene.manifest
+        if let html = try? String(contentsOf: scene.entryURL, encoding: .utf8), html.contains("<video"),
+           manifest.tiers.contains(.baked) || manifest.tiers.contains(.static) {
+            issues.append(.init(.warning, "video-tier", "the scene plays a <video>, which the baker cannot step through frame by frame. Set tiers to [\"live\"]."))
+        }
+        let assets = scene.directory.appendingPathComponent("assets")
+        var total = 0
+        for case let url as URL in FileManager.default.enumerator(at: assets, includingPropertiesForKeys: [.fileSizeKey]) ?? FileManager.DirectoryEnumerator() {
+            total += (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        }
+        if total > 100 * 1024 * 1024 {
+            issues.append(.init(.warning, "assets-size", "the assets folder is \(total / 1_048_576) MB. Smaller files load faster and keep versions light."))
+        }
         return issues
     }
 
@@ -109,7 +129,10 @@ public enum SceneLinter {
         for case let url as URL in files where textExtensions.contains(url.pathExtension.lowercased()) {
             guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
             for line in text.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
-                if line.element.contains("http://") || line.element.contains("https://") {
+                // The addresses inside an SVG or XML file (xmlns="http://www.w3.org/2000/svg", a DOCTYPE) only name a format: nothing
+                // is ever fetched from them.
+                let checked = line.element.replacingOccurrences(of: #"https?://www\.w3\.org/[^\s"'<>)]*"#, with: "", options: .regularExpression)
+                if checked.contains("http://") || checked.contains("https://") {
                     let relative = url.path.replacingOccurrences(of: scene.directory.path + "/", with: "")
                     issues.append(.init(.error, "network",
                                         "\(relative):\(line.offset + 1) uses a remote URL but permissions.network is false. Bundle the file in the scene folder, or set permissions.network to true."))
