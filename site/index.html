@@ -53,11 +53,12 @@
   .menubar span + span { margin-left: 14px; }
   .menubar .l b { font-weight:700; }
   @media (max-width: 520px) { .menubar .l span:nth-child(n+3) { display:none; } }
-  .tools { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; justify-content:space-between; max-width:760px; margin:14px auto 0; }
-  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .tools { display:flex; flex-direction:column; align-items:center; gap:14px; max-width:760px; margin:16px auto 0; }
+  .chips { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; }
   .chip { border:1px solid var(--line); background:var(--card); color:var(--muted); font:600 .8rem/1 inherit; font-family:inherit; padding:8px 13px; border-radius:980px; cursor:pointer; }
   .chip[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .pickers { display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; font-size:.85rem; color:var(--muted); }
+  /* Two rows that never move: the scenes, then the colours. The second row keeps its height even when a scene has no colour to change. */
+  .pickers { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px 18px; min-height:30px; font-size:.85rem; color:var(--muted); }
   .pickers label { display:inline-flex; align-items:center; gap:7px; }
   .pickers input { appearance:none; -webkit-appearance:none; width:28px; height:28px; padding:0; border:1px solid var(--line); border-radius:50%; background:none; cursor:pointer; }
   .pickers input::-webkit-color-swatch-wrapper { padding:2px; } .pickers input::-webkit-color-swatch { border:0; border-radius:50%; }
