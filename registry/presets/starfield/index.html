@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+const SOFT = 1.0;
+const TAU = Math.PI * 2;
+function resize() {
+  const divisor = splash.detail * SOFT;
+  canvas.width = Math.max(64, Math.round(window.innerWidth * window.devicePixelRatio / divisor));
+  canvas.height = Math.max(36, Math.round(window.innerHeight * window.devicePixelRatio / divisor));
+}
+window.addEventListener("resize", resize);
+resize();
+function rgb(hex) { return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)); }
+function mix(a, b, f) { const x = rgb(a), y = rgb(b); return "rgb(" + x.map((v, i) => Math.round(v + (y[i] - v) * f)).join(",") + ")"; }
+const LOOP = 30, COUNT = 260;
+// A fixed seed keeps every frame, and every recording, identical.
+let seed = 7;
+function rand() { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+const stars = Array.from({ length: COUNT }, () => ({ x: rand() * 2 - 1, y: rand() * 2 - 1, phase: rand(), rate: 1 + Math.floor(rand() * 2) }));
+function draw() {
+  const p = splash.params, w = canvas.width, h = canvas.height;
+  ctx.fillStyle = p.space;
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = p.stars;
+  for (const s of stars) {
+    const z = (s.phase + s.rate * p.speed * splash.time / LOOP) % 1;
+    const x = w / 2 + s.x * z * w * 0.75, y = h / 2 + s.y * z * h * 0.75;
+    const size = Math.max(1, (0.0008 + z * 0.0034) * h);
+    ctx.globalAlpha = Math.min(1, z * 1.4);
+    ctx.beginPath();
+    ctx.arc(x, y, size / 2, 0, TAU);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

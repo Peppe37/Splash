@@ -1,0 +1,46 @@
+{
+  "description" : "A still gradient with a low sun glow. Costs nothing once applied.",
+  "entry" : "index.html",
+  "fps" : 1,
+  "id" : "dusk",
+  "name" : "Dusk",
+  "params" : [
+    {
+      "default" : "#1b1b3a",
+      "key" : "top",
+      "label" : "Sky",
+      "type" : "color"
+    },
+    {
+      "default" : "#e8806a",
+      "key" : "bottom",
+      "label" : "Horizon",
+      "type" : "color"
+    },
+    {
+      "default" : "#ffd29a",
+      "key" : "glow",
+      "label" : "Glow",
+      "type" : "color"
+    },
+    {
+      "default" : 0.78,
+      "key" : "height",
+      "label" : "Glow height",
+      "max" : 0.95,
+      "min" : 0.3,
+      "step" : 0.01,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "static"
+  ]
+}

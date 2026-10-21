@@ -1,0 +1,48 @@
+{
+  "description" : "Soft colour blobs that drift slowly.",
+  "entry" : "index.html",
+  "fps" : 30,
+  "id" : "gradient-drift",
+  "loopSeconds" : 20,
+  "name" : "Gradient drift",
+  "params" : [
+    {
+      "default" : "#5b3df5",
+      "key" : "colorA",
+      "label" : "Colour A",
+      "type" : "color"
+    },
+    {
+      "default" : "#f5568b",
+      "key" : "colorB",
+      "label" : "Colour B",
+      "type" : "color"
+    },
+    {
+      "default" : "#2ec4b6",
+      "key" : "colorC",
+      "label" : "Colour C",
+      "type" : "color"
+    },
+    {
+      "default" : 1,
+      "key" : "speed",
+      "label" : "Speed",
+      "max" : 3,
+      "min" : 1,
+      "step" : 1,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "baked",
+    "live"
+  ]
+}

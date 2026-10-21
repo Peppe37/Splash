@@ -1,0 +1,48 @@
+{
+  "description" : "Slow northern-lights bands over a dark sky.",
+  "entry" : "index.html",
+  "fps" : 30,
+  "id" : "aurora",
+  "loopSeconds" : 24,
+  "name" : "Aurora",
+  "params" : [
+    {
+      "default" : "#27e1a0",
+      "key" : "colorA",
+      "label" : "Colour A",
+      "type" : "color"
+    },
+    {
+      "default" : "#7a5cff",
+      "key" : "colorB",
+      "label" : "Colour B",
+      "type" : "color"
+    },
+    {
+      "default" : "#050914",
+      "key" : "sky",
+      "label" : "Sky",
+      "type" : "color"
+    },
+    {
+      "default" : 1,
+      "key" : "speed",
+      "label" : "Speed",
+      "max" : 3,
+      "min" : 1,
+      "step" : 1,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "baked",
+    "live"
+  ]
+}

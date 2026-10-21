@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Build
+        run: swift build -c release
+      - name: Test
+        run: swift test
+      - name: Presets in the registry are up to date
+        run: |
+          .build/release/splash presets export "$RUNNER_TEMP/presets" > /dev/null
+          diff -r "$RUNNER_TEMP/presets" registry/presets
+      - name: Website demos are up to date
+        run: |
+          python3 scripts/build_site.py
+          git diff --exit-code -- site
+      - name: Lint the bundled scenes
+        run: |
+          for scene in registry/presets/*/; do
+            echo "== $scene"
+            .build/release/splash lint "$scene"
+          done
+
+  app-bundles:
+    name: App bundles (XcodeGen + Xcode)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate the Xcode project
+        run: xcodegen generate
+      - name: Build the editor (it embeds the runner and the command line tool)
+        run: xcodebuild -project Splash.xcodeproj -scheme SplashEditor -configuration Release -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+
+  docs:
+    name: Docs check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required files exist
+        run: |
+          for file in README.md LICENSE CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md CLA.md CHANGELOG.md AGENTS.md; do
+            test -f "$file" || { echo "missing $file"; exit 1; }
+          done
+      - name: Relative links in docs resolve
+        run: |
+          status=0
+          for file in README.md CONTRIBUTING.md docs/*.md; do
+            dir=$(dirname "$file")
+            for target in $(grep -oE '\]\(([^)#:]+)(#[^)]*)?\)' "$file" | sed -E 's/^\]\(([^)#]+).*/\1/'); do
+              test -e "$dir/$target" || { echo "$file: broken link $target"; status=1; }
+            done
+          done
+          exit $status

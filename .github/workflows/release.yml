@@ -1,0 +1,140 @@
+name: Release
+
+# Builds Splash.app and a DMG.
+# - Push a tag such as v0.1.0 (it must match MARKETING_VERSION in project.yml; a suffix like -alpha.1 is allowed) to publish a GitHub release.
+# - Run it by hand to build the DMG and keep it as a workflow artifact, without publishing anything.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve version
+        id: v
+        run: |
+          PROJECT=$(grep -m1 MARKETING_VERSION project.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME#v}"
+            if [ "${TAG%%-*}" != "$PROJECT" ]; then
+              echo "Tag $GITHUB_REF_NAME does not match MARKETING_VERSION $PROJECT in project.yml"
+              exit 1
+            fi
+            echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$PROJECT-dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install tools
+        run: brew install xcodegen create-dmg
+
+      - name: Test
+        run: swift test
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Build
+        run: |
+          xcodebuild -project Splash.xcodeproj -scheme SplashEditor \
+            -configuration Release -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build
+
+      - name: Sign
+        env:
+          SIGNING_P12: ${{ secrets.SIGNING_P12 }}
+          SIGNING_P12_PASSWORD: ${{ secrets.SIGNING_P12_PASSWORD }}
+        run: |
+          APP=build/Build/Products/Release/Splash.app
+          if [ -n "$SIGNING_P12" ]; then
+            # A fixed identity keeps macOS permissions across updates
+            KC="$RUNNER_TEMP/sign.keychain-db"; KCPW="$(uuidgen)"
+            echo "$SIGNING_P12" | base64 -d > "$RUNNER_TEMP/id.p12"
+            security create-keychain -p "$KCPW" "$KC"
+            security set-keychain-settings -lut 21600 "$KC"
+            security unlock-keychain -p "$KCPW" "$KC"
+            security import "$RUNNER_TEMP/id.p12" -k "$KC" -P "$SIGNING_P12_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KCPW" "$KC" >/dev/null
+            security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+            security find-certificate -c "Splash Self-Signed" -p "$KC" > "$RUNNER_TEMP/cert.pem"
+            sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/cert.pem"
+            codesign --force --deep --sign "Splash Self-Signed" --keychain "$KC" "$APP"
+            rm -f "$RUNNER_TEMP/id.p12"
+          else
+            echo "::warning::No signing secrets: using an ad-hoc signature (macOS will ask for permissions again after each update)"
+            codesign --force --deep --sign - "$APP"
+          fi
+          codesign --verify --deep --strict "$APP"
+          codesign -dr - "$APP"
+
+      - name: Create DMG
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          APP=build/Build/Products/Release/Splash.app
+          DMG="Splash-$VERSION.dmg"
+          rm -rf stage && mkdir stage && cp -R "$APP" stage/
+
+          # Styled install window (Finder-driven, so retry a few times on a busy runner)
+          ok=0
+          for attempt in 1 2 3; do
+            rm -f "$DMG"
+            if create-dmg --volname "Splash" \
+                 --volicon "$APP/Contents/Resources/AppIcon.icns" \
+                 --background dmg/background.tiff \
+                 --window-pos 200 120 --window-size 660 420 --icon-size 112 \
+                 --icon "Splash.app" 180 200 \
+                 --app-drop-link 480 200 \
+                 --hide-extension "Splash.app" \
+                 --no-internet-enable \
+                 "$DMG" stage; then
+              ok=1; break
+            fi
+            echo "create-dmg attempt $attempt failed"
+            hdiutil detach -force /Volumes/Splash >/dev/null 2>&1 || true
+            sleep 5
+          done
+
+          # Fall back to a plain DMG so a release is never blocked by cosmetics
+          if [ "$ok" != 1 ]; then
+            echo "::warning::Styled DMG failed, using a plain DMG"
+            ln -s /Applications stage/Applications
+            rm -f "$DMG"
+            hdiutil create -volname Splash -srcfolder stage -ov -format UDZO "$DMG"
+          fi
+
+      - name: Upload DMG (manual run)
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Splash-dmg
+          path: Splash-*.dmg
+
+      - name: Extract release notes
+        if: github.ref_type == 'tag'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          awk -v t="$TAG" '
+            $0 ~ "^## \\[" t "\\]" { on=1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "No CHANGELOG entry for $TAG"; exit 1; fi
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          FLAGS=""
+          case "$GITHUB_REF_NAME" in *-*) FLAGS="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" "Splash-$VERSION.dmg" \
+            --title "Splash $VERSION" --notes-file notes.md $FLAGS
