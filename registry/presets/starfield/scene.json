@@ -1,0 +1,42 @@
+{
+  "description" : "Stars drifting past, as if flying through space.",
+  "entry" : "index.html",
+  "fps" : 30,
+  "id" : "starfield",
+  "loopSeconds" : 30,
+  "name" : "Starfield",
+  "params" : [
+    {
+      "default" : "#ffffff",
+      "key" : "stars",
+      "label" : "Star colour",
+      "type" : "color"
+    },
+    {
+      "default" : "#04050d",
+      "key" : "space",
+      "label" : "Space",
+      "type" : "color"
+    },
+    {
+      "default" : 1,
+      "key" : "speed",
+      "label" : "Speed",
+      "max" : 3,
+      "min" : 1,
+      "step" : 1,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "baked",
+    "live"
+  ]
+}

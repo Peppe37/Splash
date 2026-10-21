@@ -1,0 +1,79 @@
+name: Splash
+options:
+  bundleIdPrefix: com.giuseppe.splash
+  deploymentTarget:
+    macOS: "14.0"
+# The Swift package (SplashCore, SplashPlatform) is shared with the command line build: `swift build` and Xcode use the same sources.
+packages:
+  Splash:
+    path: .
+targets:
+  # The editor app. It carries the wallpaper runner and the command line tool, so one download is the whole product.
+  SplashEditor:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/SplashEditor
+      - Resources/Assets.xcassets
+    dependencies:
+      - package: Splash
+        product: SplashCore
+      - package: Splash
+        product: SplashPlatform
+      # The runner app goes to Contents/Resources, where RunnerControl looks for it.
+      - target: SplashRunner
+        embed: true
+        codeSign: true
+        copy:
+          destination: resources
+      # The `splash` tool next to the editor's own executable, so the AI agents can run it.
+      - target: splash
+        embed: true
+        codeSign: true
+        copy:
+          destination: executables
+    settings:
+      base:
+        PRODUCT_NAME: Splash
+        PRODUCT_BUNDLE_IDENTIFIER: com.giuseppe.splash.editor
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_IDENTITY: "-"
+  # The light process that draws the wallpaper. No Dock icon: it lives in the menu bar.
+  SplashRunner:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/SplashRunner
+    dependencies:
+      - package: Splash
+        product: SplashCore
+      - package: Splash
+        product: SplashPlatform
+    settings:
+      base:
+        PRODUCT_NAME: Splash Runner
+        PRODUCT_BUNDLE_IDENTIFIER: com.giuseppe.splash.runner
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSUIElement: YES
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_IDENTITY: "-"
+  splash:
+    type: tool
+    platform: macOS
+    sources:
+      - Sources/splash
+    dependencies:
+      - package: Splash
+        product: SplashCore
+      - package: Splash
+        product: SplashPlatform
+    settings:
+      base:
+        # Not "splash": on a case-insensitive disk it would overwrite the editor's own executable, "Splash".
+        PRODUCT_NAME: splash-cli
+        CODE_SIGN_IDENTITY: "-"

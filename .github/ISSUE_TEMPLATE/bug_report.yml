@@ -1,0 +1,49 @@
+name: Bug report
+description: Something doesn't work as it should
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Splash version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: "macOS 26.1, MacBook Pro 14-inch (M3)"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. Screenshots or a short screen recording help.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Wallpaper window / runner
+        - Scene format or linter
+        - Editor
+        - AI agents
+        - Performance (CPU, memory, battery)
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: scene
+    attributes:
+      label: Scene
+      description: Which scene, and its scene.json if it is your own.
+  - type: textarea
+    id: perf
+    attributes:
+      label: CPU and memory (for performance bugs)
+      description: Activity Monitor values for the runner, and the output of `splash doctor`.

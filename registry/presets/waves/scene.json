@@ -1,0 +1,42 @@
+{
+  "description" : "Layered waves rolling at different speeds.",
+  "entry" : "index.html",
+  "fps" : 30,
+  "id" : "waves",
+  "loopSeconds" : 20,
+  "name" : "Waves",
+  "params" : [
+    {
+      "default" : "#4cc9f0",
+      "key" : "colorA",
+      "label" : "Top colour",
+      "type" : "color"
+    },
+    {
+      "default" : "#3a0ca3",
+      "key" : "colorB",
+      "label" : "Bottom colour",
+      "type" : "color"
+    },
+    {
+      "default" : 1,
+      "key" : "speed",
+      "label" : "Speed",
+      "max" : 3,
+      "min" : 1,
+      "step" : 1,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "baked",
+    "live"
+  ]
+}

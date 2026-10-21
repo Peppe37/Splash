@@ -1,0 +1,186 @@
+[
+  {
+    "id": "gradient-drift",
+    "name": "Gradient drift",
+    "summary": "Soft colour blobs that drift slowly.",
+    "tiers": [
+      "baked",
+      "live"
+    ],
+    "animated": true,
+    "params": [
+      {
+        "default": "#5b3df5",
+        "key": "colorA",
+        "label": "Colour A",
+        "type": "color"
+      },
+      {
+        "default": "#f5568b",
+        "key": "colorB",
+        "label": "Colour B",
+        "type": "color"
+      },
+      {
+        "default": "#2ec4b6",
+        "key": "colorC",
+        "label": "Colour C",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "aurora",
+    "name": "Aurora",
+    "summary": "Slow northern-lights bands over a dark sky.",
+    "tiers": [
+      "baked",
+      "live"
+    ],
+    "animated": true,
+    "params": [
+      {
+        "default": "#27e1a0",
+        "key": "colorA",
+        "label": "Colour A",
+        "type": "color"
+      },
+      {
+        "default": "#7a5cff",
+        "key": "colorB",
+        "label": "Colour B",
+        "type": "color"
+      },
+      {
+        "default": "#050914",
+        "key": "sky",
+        "label": "Sky",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "starfield",
+    "name": "Starfield",
+    "summary": "Stars drifting past, as if flying through space.",
+    "tiers": [
+      "baked",
+      "live"
+    ],
+    "animated": true,
+    "params": [
+      {
+        "default": "#ffffff",
+        "key": "stars",
+        "label": "Star colour",
+        "type": "color"
+      },
+      {
+        "default": "#04050d",
+        "key": "space",
+        "label": "Space",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "waves",
+    "name": "Waves",
+    "summary": "Layered waves rolling at different speeds.",
+    "tiers": [
+      "baked",
+      "live"
+    ],
+    "animated": true,
+    "params": [
+      {
+        "default": "#4cc9f0",
+        "key": "colorA",
+        "label": "Top colour",
+        "type": "color"
+      },
+      {
+        "default": "#3a0ca3",
+        "key": "colorB",
+        "label": "Bottom colour",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "ribbons",
+    "name": "Ribbons",
+    "summary": "Thin glowing lines flowing across the screen.",
+    "tiers": [
+      "baked",
+      "live"
+    ],
+    "animated": true,
+    "params": [
+      {
+        "default": "#ff4d8d",
+        "key": "colorA",
+        "label": "Colour A",
+        "type": "color"
+      },
+      {
+        "default": "#4d9bff",
+        "key": "colorB",
+        "label": "Colour B",
+        "type": "color"
+      },
+      {
+        "default": "#0a0714",
+        "key": "background",
+        "label": "Background",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "dusk",
+    "name": "Dusk",
+    "summary": "A still gradient with a low sun glow. Costs nothing once applied.",
+    "tiers": [
+      "static"
+    ],
+    "animated": false,
+    "params": [
+      {
+        "default": "#1b1b3a",
+        "key": "top",
+        "label": "Sky",
+        "type": "color"
+      },
+      {
+        "default": "#e8806a",
+        "key": "bottom",
+        "label": "Horizon",
+        "type": "color"
+      },
+      {
+        "default": "#ffd29a",
+        "key": "glow",
+        "label": "Glow",
+        "type": "color"
+      }
+    ]
+  },
+  {
+    "id": "blank",
+    "name": "Blank",
+    "summary": "A plain colour. A starting point for the AI.",
+    "tiers": [
+      "static"
+    ],
+    "animated": false,
+    "params": [
+      {
+        "default": "#101018",
+        "key": "color",
+        "label": "Colour",
+        "type": "color"
+      }
+    ]
+  }
+]

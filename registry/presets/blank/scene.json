@@ -1,0 +1,25 @@
+{
+  "description" : "A plain colour. A starting point for the AI.",
+  "entry" : "index.html",
+  "fps" : 1,
+  "id" : "blank",
+  "name" : "Blank",
+  "params" : [
+    {
+      "default" : "#101018",
+      "key" : "color",
+      "label" : "Colour",
+      "type" : "color"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "static"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "description" : "Thin glowing lines flowing across the screen.",
+  "entry" : "index.html",
+  "fps" : 30,
+  "id" : "ribbons",
+  "loopSeconds" : 24,
+  "name" : "Ribbons",
+  "params" : [
+    {
+      "default" : "#ff4d8d",
+      "key" : "colorA",
+      "label" : "Colour A",
+      "type" : "color"
+    },
+    {
+      "default" : "#4d9bff",
+      "key" : "colorB",
+      "label" : "Colour B",
+      "type" : "color"
+    },
+    {
+      "default" : "#0a0714",
+      "key" : "background",
+      "label" : "Background",
+      "type" : "color"
+    },
+    {
+      "default" : 1,
+      "key" : "speed",
+      "label" : "Speed",
+      "max" : 3,
+      "min" : 1,
+      "step" : 1,
+      "type" : "number"
+    }
+  ],
+  "permissions" : {
+    "audio" : false,
+    "location" : false,
+    "network" : false
+  },
+  "runtime" : "web",
+  "schemaVersion" : 1,
+  "tiers" : [
+    "baked",
+    "live"
+  ]
+}
