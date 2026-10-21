@@ -37,6 +37,15 @@ public final class OffscreenRenderer {
         window.isReleasedWhenClosed = false
         window.ignoresMouseEvents = true
         window.hasShadow = false
+        // It must never be seen: fully transparent, no zoom-in animation, and not listed in Mission Control or the Window menu. Without
+        // this, a window ordered in while the app is on another Space shows up on the Space the user is working on.
+        window.alphaValue = 0
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.animationBehavior = .none
+        window.isExcludedFromWindowsMenu = true
+        window.canHide = false
+        window.collectionBehavior = [.transient, .stationary, .ignoresCycle, .fullScreenNone]
         // Detail 1: pictures and recordings use every pixel. Quality costs nothing here, and the result is kept.
         webView = SceneWebView(scene: scene, fps: 60, paramsJSON: ParamStore.json(values), detail: 1, frame: frame)
         window.contentView = webView

@@ -12,6 +12,9 @@ final class EditorDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+
+    /// Opening the app again (from the Dock, or from the wallpaper's menu) brings the window back if it was hidden, and does nothing else.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool { !flag }
 }
 
 @main
@@ -20,7 +23,8 @@ struct EditorApp: App {
     @State private var model = AppModel()
 
     var body: some SwiftUI.Scene {
-        WindowGroup("Splash") {
+        // One window only. A WindowGroup opens another window every time the app is "opened" again, which is not wanted here.
+        Window("Splash", id: "main") {
             RootView()
                 .environment(model)
                 .frame(minWidth: 1040, minHeight: 680)

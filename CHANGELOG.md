@@ -4,6 +4,14 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.4-alpha] - 2026-10-21
+
+### Added
+- **Choose the model's effort.** Next to the agent and the model, an Effort menu sets how hard the model thinks (Claude Code: Low, Medium, High, Extra high, Max; Codex: Low, Medium, High). It is shown in the chat with each request. `splash ask --effort`.
+
+### Fixed
+- **A window no longer pops up when the AI finishes.** The small invisible windows Splash uses to draw thumbnails and pictures were really opaque and on screen, so when you were on another Space they appeared on yours, once per change to the scene. They are now fully transparent, without animation, and not listed in Mission Control. The editor is also a single window now: opening the app again brings it back instead of opening another.
+
 ## [0.1.3-alpha] - 2026-10-21
 
 ### Added
