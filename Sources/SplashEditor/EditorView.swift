@@ -330,6 +330,7 @@ struct Composer: View {
                 } else {
                     agentMenu(agents)
                     modelMenu
+                    if !chat.agent.effortOptions.isEmpty { effortMenu }
                 }
                 Spacer()
                 if chat.isRunning {
@@ -396,6 +397,25 @@ struct Composer: View {
         }
         .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
         .help("The model the agent uses for this request")
+    }
+
+    /// How hard the model thinks: slower and more careful at the top, quicker and cheaper at the bottom.
+    private var effortMenu: some View {
+        Menu {
+            ForEach(chat.agent.effortOptions, id: \.self) { option in
+                Button { chat.setEffort(option.value ?? "") } label: {
+                    Label(option.value == nil ? "Default (the agent's own choice)" : option.label,
+                          systemImage: (option.value ?? "") == chat.effort ? "checkmark" : "")
+                }
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Text("Effort").font(.system(size: 12)).foregroundStyle(Theme.muted)
+                Text(chat.effortLabel).font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.text)
+            }
+        }
+        .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
+        .help("How hard the model thinks. Higher is slower and more careful; lower is quicker and uses less of your plan.")
     }
 
     private func chooseFiles() {

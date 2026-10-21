@@ -494,3 +494,49 @@ struct LinterNamespaceTests {
         #expect(try codes(forAsset: #"<svg xmlns="http://www.w3.org/2000/svg"><image href="https://example.com/x.png"/></svg>"#).contains("network"))
     }
 }
+
+@Suite("Effort")
+struct EffortTests {
+    @Test func claudeTakesTheEffortLevel() {
+        let arguments = AgentKind.claude.arguments(prompt: "hi", imagePaths: [], splashCLI: "/x/splash", model: "sonnet", effort: "high")
+        #expect(arguments[arguments.firstIndex(of: "--effort")! + 1] == "high")
+        // The tool list takes several values, so it has to stay last.
+        #expect(arguments.firstIndex(of: "--effort")! < arguments.firstIndex(of: "--allowedTools")!)
+        for level in ["low", "medium", "high", "xhigh", "max"] {
+            #expect(AgentKind.claude.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: level).contains(level))
+        }
+    }
+
+    @Test func noEffortMeansTheAgentsOwnChoice() {
+        for kind in AgentKind.allCases {
+            let arguments = kind.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: nil)
+            #expect(!arguments.contains("--effort"))
+            #expect(!arguments.contains { $0.hasPrefix("model_reasoning_effort") })
+        }
+    }
+
+    @Test func aLevelTheAgentDoesNotKnowIsNotPassed() {
+        #expect(!AgentKind.claude.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: "extreme").contains("--effort"))
+        // Codex has no "max".
+        #expect(!AgentKind.codex.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: "max").contains { $0.hasPrefix("model_reasoning_effort") })
+    }
+
+    @Test func codexTakesItAsAConfigurationValue() {
+        let arguments = AgentKind.codex.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: "medium")
+        let index = arguments.firstIndex(of: "-c")!
+        #expect(arguments[index + 1] == "model_reasoning_effort=\"medium\"")
+        // The prompt stays last.
+        #expect(arguments.last == "hi")
+    }
+
+    @Test func openCodeOffersNoEffort() {
+        #expect(AgentKind.opencode.effortOptions.isEmpty)
+        #expect(!AgentKind.opencode.arguments(prompt: "hi", imagePaths: [], splashCLI: nil, effort: "high").contains("high"))
+    }
+
+    @Test func everyMenuStartsWithTheAgentsDefault() {
+        for kind in AgentKind.allCases where !kind.effortOptions.isEmpty {
+            #expect(kind.effortOptions.first?.value == nil)
+        }
+    }
+}

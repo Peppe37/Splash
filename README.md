@@ -58,7 +58,7 @@ Splash is a free and open-source app that puts animated and procedural wallpaper
 - **Library**: your scenes and the presets as cards with a real picture of the scene, drawn by the same code that draws the wallpaper.
 - **Large preview and controls**: colours, speed and so on, built from the scene's own list, following your hand live.
 - **Still, Loop or Live**: pick how to put the scene on the desktop. A still is set as the real wallpaper. A loop is recorded once, in full resolution and without a jump, and played by the system. A live scene is drawn in real time, for scenes that react to something.
-- **AI chat**: the prompt under the preview talks to an agent CLI, and always shows which agent and whose models are used (for example Claude Code, Anthropic) and lets you pick the model. Drawings and numbered pin comments on the preview are sent with the request, and the agent changes only what you pointed at.
+- **AI chat**: the prompt under the preview talks to an agent CLI, and always shows which agent and whose models are used (for example Claude Code, Anthropic) and lets you pick the model and how hard it thinks (effort). Drawings and numbered pin comments on the preview are sent with the request, and the agent changes only what you pointed at.
 - **Give it files**: attach images, SVG drawings, videos or 3D models with the paperclip, or drop them on the editor. Each one is either **in the scene** (copied to `assets/`, so a character or a logo can be part of the wallpaper) or **a reference** (the agent only looks at it). For a video the agent gets pictures taken from it.
 - **Versions**: one is saved before every AI change and every restore, so any change can be undone.
 - **The runner**: a menu bar item (pause, open Splash, start at login) that draws the wallpaper on every display. It pauses when covered, when the screen sleeps or locks, on Low Power Mode and when the Mac is hot, lowers its frame rate on battery, and shows a still picture while paused.
@@ -131,7 +131,7 @@ splash init my-scene --preset aurora
 splash lint my-scene
 splash snapshot my-scene out.png --time 5        # a picture of the scene
 splash bake my-scene out.mov                     # one seamless HEVC loop
-splash ask my-scene "make it slower and warmer"  # needs an agent CLI; add --model sonnet, --attach fox.svg, --reference mood.png
+splash ask my-scene "make it slower and warmer"  # needs an agent CLI; add --model sonnet, --effort high, --attach fox.svg, --reference mood.png
 splash-runner my-scene                           # show it live on the desktop (Ctrl+C to stop)
 ```
 

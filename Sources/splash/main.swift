@@ -18,7 +18,7 @@ Usage:
                                              Draw the scene at a moment and save a picture (agents use this to see their work)
   splash bake <scene-folder> <out.mov> [--width <px>] [--height <px>] [--fps <n>]
                                              Render one seamless loop into an HEVC video
-  splash ask <scene-folder> "<request>" [--agent claude|codex|opencode] [--model <name>] [--attach <file>]...
+  splash ask <scene-folder> "<request>" [--agent claude|codex|opencode] [--model <name>] [--effort <level>] [--attach <file>]...
                                              Ask an AI agent CLI (your own login, no API key) to change the scene; saves a version first
   splash desktop set <image>                 Set a picture as the wallpaper of every Space (saves your wallpaper settings first)
   splash desktop restore                     Put your previous wallpaper settings back
@@ -178,8 +178,13 @@ func runAsk(_ arguments: [String]) -> Never {
             }
         }
     }
+    let effort = option("--effort", in: arguments)
+    if let effort, !kind.effortOptions.contains(where: { $0.value == effort }) {
+        let known = kind.effortOptions.compactMap(\.value)
+        fail(known.isEmpty ? "\(kind.displayName) has no effort setting here." : "Unknown effort \"\(effort)\" for \(kind.displayName). Use one of: \(known.joined(separator: ", ")).")
+    }
     let session = AgentSession(kind: kind, executable: executable, request: request, sceneDirectory: scene.directory,
-                               model: option("--model", in: arguments))
+                               model: option("--model", in: arguments), effort: effort)
     print("Asking \(kind.displayName)…")
     session.start()
     let done = DispatchSemaphore(value: 0)

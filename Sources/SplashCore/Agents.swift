@@ -44,6 +44,29 @@ public enum AgentKind: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    public struct EffortOption: Equatable, Hashable, Sendable {
+        public let label: String
+        /// What is passed to the agent. Nil means: the agent's own default.
+        public let value: String?
+    }
+
+    /// How hard the model should think. Claude Code takes it as `--effort` (checked against its `--help`). Codex takes it as the
+    /// configuration value `model_reasoning_effort` (from its documentation: not tested, Codex is not installed on the development
+    /// machine). OpenCode ties it to a model "variant" and has no setting of its own, so nothing is offered for it.
+    public var effortOptions: [EffortOption] {
+        switch self {
+        case .claude:
+            return [EffortOption(label: "Default", value: nil), EffortOption(label: "Low", value: "low"),
+                    EffortOption(label: "Medium", value: "medium"), EffortOption(label: "High", value: "high"),
+                    EffortOption(label: "Extra high", value: "xhigh"), EffortOption(label: "Max", value: "max")]
+        case .codex:
+            return [EffortOption(label: "Default", value: nil), EffortOption(label: "Low", value: "low"),
+                    EffortOption(label: "Medium", value: "medium"), EffortOption(label: "High", value: "high")]
+        case .opencode:
+            return []
+        }
+    }
+
     /// The hint for the box where a model name can be typed.
     public var modelHint: String {
         switch self {
@@ -64,19 +87,23 @@ public enum AgentKind: String, CaseIterable, Identifiable, Sendable {
 
     /// Arguments for one non-interactive turn. The working directory is the scene folder.
     /// Claude Code is checked against its current `--help`; Codex is not installed on the development machine, so its flags are unverified.
-    public func arguments(prompt: String, imagePaths: [String], splashCLI: String?, model: String? = nil) -> [String] {
+    public func arguments(prompt: String, imagePaths: [String], splashCLI: String?, model: String? = nil, effort: String? = nil) -> [String] {
         let model = model?.trimmingCharacters(in: .whitespaces).nilIfEmpty
+        // Only a level the agent is known to take is passed on.
+        let effort = effort.flatMap { level in effortOptions.contains { $0.value == level } ? level : nil }
         switch self {
         case .claude:
             var tools = "Read,Edit,Write,Glob,Grep"
             if let splashCLI { tools += ",Bash(\(splashCLI):*)" }
             var arguments = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits"]
             if let model { arguments += ["--model", model] }
+            if let effort { arguments += ["--effort", effort] }
             // --allowedTools takes a list, so it goes last.
             return arguments + ["--allowedTools", tools]
         case .codex:
             var arguments = ["exec", "--sandbox", "workspace-write", "--skip-git-repo-check"]
             if let model { arguments += ["--model", model] }
+            if let effort { arguments += ["-c", "model_reasoning_effort=\"\(effort)\""] }
             for path in imagePaths { arguments += ["--image", path] }
             return arguments + [prompt]
         case .opencode:
@@ -190,7 +217,7 @@ public final class AgentSession: @unchecked Sendable {
     private var sawResult = false
     private var cancelled = false
 
-    public init(kind: AgentKind, executable: URL, request: AgentRequest, sceneDirectory: URL, model: String? = nil) {
+    public init(kind: AgentKind, executable: URL, request: AgentRequest, sceneDirectory: URL, model: String? = nil, effort: String? = nil) {
         self.kind = kind
         var continuation: AsyncStream<AgentEvent>.Continuation!
         events = AsyncStream { continuation = $0 }
@@ -200,7 +227,7 @@ public final class AgentSession: @unchecked Sendable {
         process.currentDirectoryURL = sceneDirectory
         process.arguments = kind.arguments(prompt: request.prompt(sceneDirectory: sceneDirectory),
                                            imagePaths: request.imagePaths(sceneDirectory: sceneDirectory),
-                                           splashCLI: request.splashCLI, model: model)
+                                           splashCLI: request.splashCLI, model: model, effort: effort)
         var environment = ProcessInfo.processInfo.environment
         environment["PATH"] = AgentLocator.environmentPATH
         process.environment = environment

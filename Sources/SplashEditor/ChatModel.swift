@@ -33,6 +33,8 @@ final class ChatModel {
     }
     /// The model chosen for each agent. Empty means the agent's own default.
     private(set) var models: [String: String]
+    /// The reasoning effort chosen for each agent. Empty means the agent's own default.
+    private(set) var efforts: [String: String]
 
     private unowned let app: AppModel
     private let sceneID: String
@@ -45,6 +47,7 @@ final class ChatModel {
         let installed = AgentLocator.installed()
         agent = saved.flatMap { installed.contains($0) ? $0 : nil } ?? installed.first ?? .claude
         models = Dictionary(uniqueKeysWithValues: AgentKind.allCases.map { ($0.rawValue, UserDefaults.standard.string(forKey: "agentModel.\($0.rawValue)") ?? "") })
+        efforts = Dictionary(uniqueKeysWithValues: AgentKind.allCases.map { ($0.rawValue, UserDefaults.standard.string(forKey: "agentEffort.\($0.rawValue)") ?? "") })
     }
 
     var installedAgents: [AgentKind] { AgentLocator.installed() }
@@ -61,6 +64,18 @@ final class ChatModel {
     var modelLabel: String {
         if model.isEmpty { return "Default" }
         return agent.modelOptions.first { $0.value == model }?.label ?? model
+    }
+
+    /// The effort for the current agent. Empty means the agent's own default.
+    var effort: String { efforts[agent.rawValue] ?? "" }
+
+    func setEffort(_ value: String) {
+        efforts[agent.rawValue] = value
+        UserDefaults.standard.set(value, forKey: "agentEffort.\(agent.rawValue)")
+    }
+
+    var effortLabel: String {
+        agent.effortOptions.first { ($0.value ?? "") == effort }?.label ?? "Default"
     }
 
     // MARK: - Attachments
@@ -133,7 +148,8 @@ final class ChatModel {
         }
         messages.append(ChatMessage(kind: .user, text: text, imagePath: shownImage,
                                     attachments: pending.map { "\($0.url.lastPathComponent) (\($0.role == .use ? "in the scene" : "reference"))" }))
-        messages.append(ChatMessage(kind: .note, text: "Asking \(agent.displayName) (\(agent.provider)), model: \(modelLabel)"))
+        let effortNote = agent.effortOptions.isEmpty ? "" : ", effort: \(effortLabel)"
+        messages.append(ChatMessage(kind: .note, text: "Asking \(agent.displayName) (\(agent.provider)), model: \(modelLabel)\(effortNote)"))
         if shownImage != nil { app.annotations.clear(); app.annotations.isActive = false }
 
         // Make sure the folder explains the rules, even for scenes made by hand.
@@ -143,7 +159,7 @@ final class ChatModel {
         }
 
         let session = AgentSession(kind: agent, executable: executable, request: request, sceneDirectory: scene.directory,
-                                   model: model.isEmpty ? nil : model)
+                                   model: model.isEmpty ? nil : model, effort: effort.isEmpty ? nil : effort)
         self.session = session
         session.start()
 
