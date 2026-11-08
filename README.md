@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <a href="https://peppe37.github.io/Splash/">Website</a> ·
+  <a href="https://splash.giulapi.dev/">Website</a> ·
   <a href="https://github.com/Peppe37/Splash/releases/latest">Download</a> ·
   <a href="#faq">FAQ</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·
@@ -232,7 +232,7 @@ Full list in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Reviews
 
-Used Splash? Leave a review: sign in with GitHub, give 1 to 5 stars and a few words, tied to the version you use ([write one](https://github.com/Peppe37/Splash/issues/new?template=review.yml)). They show on [the website](https://peppe37.github.io/Splash/#reviews), good or bad: only spam and abuse are removed, and the numbers are worked out in the open by [scripts/gen_reviews.py](scripts/gen_reviews.py).
+Used Splash? Leave a review: sign in with GitHub, give 1 to 5 stars and a few words, tied to the version you use ([write one](https://github.com/Peppe37/Splash/issues/new?template=review.yml)). They show on [the website](https://splash.giulapi.dev/#reviews), good or bad: only spam and abuse are removed, and the numbers are worked out in the open by [scripts/gen_reviews.py](scripts/gen_reviews.py).
 
 ## Support and contributing
 
